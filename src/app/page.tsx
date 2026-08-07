@@ -1,5 +1,21 @@
+import backgrond from "../../public/background/background2.png";
 import Image from "next/image";
-
 export default function Home() {
-  return <>initial commit</>;
+  return (
+    <div className="min-h-screen bg-background">
+      <Image
+        src={backgrond}
+        alt="background-img"
+        className="bg-cover absolute bg-center z-0 h-screen"
+      />
+      <div className="flex items-center justify-start h-screen px-10 ">
+        <h1 className="z-10 text-white text-4xl font-extrabold font-heading">
+          Find your next travel-buddy on{" "}
+          <div className="text-7xl bg-linear-to-r from-indigo-500  to-indigo-900 bg-clip-text text-transparent">
+            VITravels
+          </div>
+        </h1>
+      </div>
+    </div>
+  );
 }
