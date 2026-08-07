@@ -6,6 +6,8 @@ import {
   Special_Gothic_Expanded_One,
 } from "next/font/google";
 import "./globals.css";
+import { ThemeProvider } from "next-themes";
+import { NavMenu } from "@/components/layout/navbar";
 import { cn } from "@/lib/utils";
 
 const special = Special_Gothic_Expanded_One({
@@ -34,6 +36,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
+      suppressHydrationWarning
       lang="en"
       className={cn(
         "h-full",
@@ -45,7 +48,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       )}
     >
       <body className={`min-h-full flex flex-col ${special.variable}`}>
-        {children}
+        <ThemeProvider attribute="class">
+          <div className="fixed top-0 right-0 z-50 p-4">
+            <NavMenu />
+          </div>
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );
