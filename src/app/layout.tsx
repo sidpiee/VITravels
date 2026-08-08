@@ -9,6 +9,7 @@ import "./globals.css";
 import { ThemeProvider } from "next-themes";
 import { NavMenu } from "@/components/layout/navbar";
 import { cn } from "@/lib/utils";
+import { Toaster } from "@/components/ui/sonner";
 
 const special = Special_Gothic_Expanded_One({
   subsets: ["latin"],
@@ -53,6 +54,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <NavMenu />
           </div>
           {children}
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>
