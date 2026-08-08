@@ -1,7 +1,8 @@
 "use client";
 
-import * as React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
+import Link from "next/link";
+import type { CSSProperties } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
@@ -23,27 +24,23 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupText,
-  InputGroupTextarea,
-} from "@/components/ui/input-group";
 
 const formSchema = z.object({
   name: z
     .string()
-    .min(3, "Name must be atleast 3 characters.")
-    .max(20, "Name must be atmost 20 characters."),
+    .trim()
+    .min(3, "Name must be at least 3 characters.")
+    .max(20, "Name must be at most 20 characters."),
   username: z
     .string()
-    .min(3, "Name must be atleast 3 characters.")
-    .max(20, "Name must be atmost 20 characters."),
-  email: z.email("Invalid email address").toLowerCase().trim(),
+    .trim()
+    .min(3, "Username must be at least 3 characters.")
+    .max(20, "Username must be at most 20 characters."),
+  email: z.email("Invalid email address").trim().toLowerCase(),
   password: z
     .string()
-    .min(8, "Password must be atleast 8 characters")
-    .max(20, "Password cannot exceed 20 characters"),
+    .min(8, "Password must be at least 8 characters.")
+    .max(50, "Password cannot exceed 50 characters"),
 });
 
 export function SignupForm() {
@@ -58,10 +55,16 @@ export function SignupForm() {
   });
 
   function onSubmit(data: z.infer<typeof formSchema>) {
+    const safeData = {
+      name: data.name,
+      username: data.username,
+      email: data.email,
+    };
+
     toast("You submitted the following values:", {
       description: (
         <pre className="mt-2 w-[320px] overflow-x-auto rounded-md bg-code p-4 text-code-foreground">
-          <code>{JSON.stringify(data, null, 2)}</code>
+          <code>{JSON.stringify(safeData, null, 2)}</code>
         </pre>
       ),
       position: "bottom-right",
@@ -70,7 +73,7 @@ export function SignupForm() {
       },
       style: {
         "--border-radius": "calc(var(--radius)  + 4px)",
-      } as React.CSSProperties,
+      } as CSSProperties,
     });
   }
 
@@ -83,20 +86,20 @@ export function SignupForm() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form id="form-rhf-demo" onSubmit={form.handleSubmit(onSubmit)}>
+        <form id="signup-form" onSubmit={form.handleSubmit(onSubmit)}>
           <FieldGroup>
             <Controller
               name="name"
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="form-rhf-demo-title">Name</FieldLabel>
+                  <FieldLabel htmlFor="signup-name">Name</FieldLabel>
                   <Input
                     {...field}
-                    id="form-rhf-demo-title"
+                    id="signup-name"
                     aria-invalid={fieldState.invalid}
                     placeholder="Ben Dover"
-                    autoComplete="off"
+                    autoComplete="name"
                   />
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
@@ -109,15 +112,14 @@ export function SignupForm() {
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="form-rhf-demo-description">
-                    Username
-                  </FieldLabel>
+                  <FieldLabel htmlFor="signup-username">Username</FieldLabel>
                   <Input
                     {...field}
-                    id="form-rhf-demo-title"
+                    id="signup-username"
                     aria-invalid={fieldState.invalid}
-                    placeholder="@Ben Dover"
-                    autoComplete="off"
+                    placeholder="ben-dover"
+                    autoComplete="username"
+                    autoCapitalize="none"
                   />
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
@@ -130,15 +132,15 @@ export function SignupForm() {
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="form-rhf-demo-description">
-                    Email
-                  </FieldLabel>
+                  <FieldLabel htmlFor="signup-email">Email</FieldLabel>
                   <Input
                     {...field}
-                    id="form-rhf-demo-title"
+                    id="signup-email"
                     aria-invalid={fieldState.invalid}
                     placeholder="abc@gmail.com"
-                    autoComplete="off"
+                    type="email"
+                    autoComplete="email"
+                    autoCapitalize="none"
                   />
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
@@ -151,15 +153,13 @@ export function SignupForm() {
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="form-rhf-demo-description">
-                    Password
-                  </FieldLabel>
+                  <FieldLabel htmlFor="signup-password">Password</FieldLabel>
                   <Input
                     {...field}
-                    id="form-rhf-demo-title"
+                    id="signup-password"
                     aria-invalid={fieldState.invalid}
-                    placeholder="Ben Dover"
-                    autoComplete="off"
+                    placeholder="Your password"
+                    autoComplete="new-password"
                     type="password"
                   />
                   {fieldState.invalid && (
@@ -176,9 +176,12 @@ export function SignupForm() {
           <Button type="button" variant="outline" onClick={() => form.reset()}>
             Reset
           </Button>
-          <Button type="submit" form="form-rhf-demo">
+          <Button type="submit" form="signup-form">
             Submit
           </Button>
+          <FieldDescription>
+            Already a user ? <Link href="/auth/login">Login</Link>
+          </FieldDescription>
         </Field>
       </CardFooter>
     </Card>
