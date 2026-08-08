@@ -6,7 +6,7 @@ import type { CSSProperties } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
-
+import { ShineBorder } from "@/components/ui/shine-border";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -78,7 +78,8 @@ export function SignupForm() {
   }
 
   return (
-    <Card className="w-full sm:max-w-md bg-transparent border ring-0 border-x-0">
+    <Card className="relative w-full sm:max-w-md bg-transparent overflow-hidden ring-0">
+      <ShineBorder shineColor={["#00E5FF", "#008CFF", "#4F46E5", "#8B5CF6"]} />
       <CardHeader>
         <CardTitle>Signup Form</CardTitle>
         <CardDescription>
