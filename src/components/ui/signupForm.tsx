@@ -2,11 +2,10 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
-import type { CSSProperties } from "react";
+import { useState, type CSSProperties } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
-import { ShineBorder } from "@/components/ui/shine-border";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -24,6 +23,12 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { ShineBorder } from "@/components/ui/shine-border";
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+} from "@/components/ui/input-otp";
 
 const formSchema = z.object({
   name: z
@@ -36,7 +41,14 @@ const formSchema = z.object({
     .trim()
     .min(3, "Username must be at least 3 characters.")
     .max(20, "Username must be at most 20 characters."),
-  email: z.email("Invalid email address").trim().toLowerCase(),
+  email: z
+    .email("Invalid email address")
+    .trim()
+    .regex(
+      /^[a-z]+\.2[a-z0-9]{4}10[a-z0-9]{3}@vitbhopal\.ac\.in$/i,
+      "Use your VIT Bhopal email, e.g. student.2xxxx10xxx@vitbhopal.ac.in.",
+    )
+    .toLowerCase(),
   password: z
     .string()
     .min(8, "Password must be at least 8 characters.")
@@ -44,6 +56,8 @@ const formSchema = z.object({
 });
 
 export function SignupForm() {
+  const [sentOTP, setSentOTP] = useState(false);
+  const [otp, setOtp] = useState("");
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -55,6 +69,7 @@ export function SignupForm() {
   });
 
   function onSubmit(data: z.infer<typeof formSchema>) {
+    setSentOTP(true);
     const safeData = {
       name: data.name,
       username: data.username,
@@ -75,6 +90,9 @@ export function SignupForm() {
         "--border-radius": "calc(var(--radius)  + 4px)",
       } as CSSProperties,
     });
+  }
+  function handleVerifyOtp(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
   }
 
   return (
@@ -138,7 +156,7 @@ export function SignupForm() {
                     {...field}
                     id="signup-email"
                     aria-invalid={fieldState.invalid}
-                    placeholder="abc@gmail.com"
+                    placeholder="student.2xxxx10xxx@vitbhopal.ac.in"
                     type="email"
                     autoComplete="email"
                     autoCapitalize="none"
@@ -174,15 +192,52 @@ export function SignupForm() {
       </CardContent>
       <CardFooter>
         <Field orientation="horizontal">
-          <Button type="button" variant="outline" onClick={() => form.reset()}>
-            Reset
-          </Button>
-          <Button type="submit" form="signup-form">
-            Submit
-          </Button>
-          <FieldDescription>
-            Already a user ? <Link href="/auth/login">Login</Link>
-          </FieldDescription>
+          {sentOTP ? (
+            <form
+              onSubmit={handleVerifyOtp}
+              className="flex items-center gap-3"
+            >
+              <InputOTP
+                maxLength={6}
+                value={otp}
+                onChange={(value) => setOtp(value)}
+                inputMode="numeric"
+              >
+                <InputOTPGroup>
+                  <InputOTPSlot index={0} />
+                  <InputOTPSlot index={1} />
+                  <InputOTPSlot index={2} />
+                  <InputOTPSlot index={3} />
+                  <InputOTPSlot index={4} />
+                  <InputOTPSlot index={5} />
+                </InputOTPGroup>
+              </InputOTP>
+              <Button className="cursor-pointer" type="submit">
+                Verify OTP
+              </Button>
+            </form>
+          ) : (
+            <>
+              <Button
+                className="cursor-pointer"
+                type="button"
+                variant="outline"
+                onClick={() => form.reset()}
+              >
+                Reset
+              </Button>
+              <Button
+                className="cursor-pointer"
+                type="submit"
+                form="signup-form"
+              >
+                Send OTP
+              </Button>
+              <FieldDescription>
+                Already a user ? <Link href="/auth/login">Login</Link>
+              </FieldDescription>
+            </>
+          )}
         </Field>
       </CardFooter>
     </Card>

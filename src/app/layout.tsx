@@ -10,6 +10,7 @@ import { ThemeProvider } from "next-themes";
 import { NavMenu } from "@/components/layout/navbar";
 import { cn } from "@/lib/utils";
 import { Toaster } from "@/components/ui/sonner";
+import QueryProvider from "@/services/QueryProvider";
 
 const special = Special_Gothic_Expanded_One({
   subsets: ["latin"],
@@ -49,13 +50,15 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       )}
     >
       <body className={`min-h-full flex flex-col ${special.variable}`}>
-        <ThemeProvider attribute="class">
-          <div className="fixed top-0 right-0 z-50 p-4">
-            <NavMenu />
-          </div>
-          {children}
-          <Toaster />
-        </ThemeProvider>
+        <QueryProvider>
+          <ThemeProvider attribute="class">
+            <div className="fixed top-0 right-0 z-50 p-4">
+              <NavMenu />
+            </div>
+            {children}
+            <Toaster />
+          </ThemeProvider>
+        </QueryProvider>
       </body>
     </html>
   );
