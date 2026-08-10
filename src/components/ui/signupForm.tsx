@@ -29,6 +29,8 @@ import {
   InputOTPGroup,
   InputOTPSlot,
 } from "@/components/ui/input-otp";
+import { useMutation } from "@tanstack/react-query";
+import { Spinner } from "./spinner";
 
 const formSchema = z.object({
   name: z
@@ -68,31 +70,43 @@ export function SignupForm() {
     },
   });
 
-  function onSubmit(data: z.infer<typeof formSchema>) {
-    setSentOTP(true);
-    const safeData = {
-      name: data.name,
-      username: data.username,
-      email: data.email,
-    };
+  const sendOTPMutation = useMutation({
+    mutationFn: async (email: string) => {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_API}/api/auth/send-otp`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email }),
+        },
+      );
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message);
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      setSentOTP(true);
+      toast.message("otp sent successfully!");
+    },
+    onError: (err) => {
+      toast.error(err.message);
+    },
+  });
 
-    toast("You submitted the following values:", {
-      description: (
-        <pre className="mt-2 w-[320px] overflow-x-auto rounded-md bg-code p-4 text-code-foreground">
-          <code>{JSON.stringify(safeData, null, 2)}</code>
-        </pre>
-      ),
-      position: "bottom-right",
-      classNames: {
-        content: "flex flex-col gap-2",
-      },
-      style: {
-        "--border-radius": "calc(var(--radius)  + 4px)",
-      } as CSSProperties,
-    });
+  function onSubmit(data: z.infer<typeof formSchema>) {
+    sendOTPMutation.mutate(data.email);
   }
   function handleVerifyOtp(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+  }
+
+  function handleChangeEmail() {
+    setSentOTP(false);
+    setOtp("");
   }
 
   return (
@@ -119,6 +133,7 @@ export function SignupForm() {
                     aria-invalid={fieldState.invalid}
                     placeholder="Ben Dover"
                     autoComplete="name"
+                    disabled={sentOTP}
                   />
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
@@ -139,6 +154,7 @@ export function SignupForm() {
                     placeholder="ben-dover"
                     autoComplete="username"
                     autoCapitalize="none"
+                    disabled={sentOTP}
                   />
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
@@ -160,6 +176,7 @@ export function SignupForm() {
                     type="email"
                     autoComplete="email"
                     autoCapitalize="none"
+                    disabled={sentOTP}
                   />
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
@@ -180,6 +197,7 @@ export function SignupForm() {
                     placeholder="Your password"
                     autoComplete="new-password"
                     type="password"
+                    disabled={sentOTP}
                   />
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
@@ -195,7 +213,7 @@ export function SignupForm() {
           {sentOTP ? (
             <form
               onSubmit={handleVerifyOtp}
-              className="flex items-center gap-3"
+              className="flex flex-col items-center gap-3"
             >
               <InputOTP
                 maxLength={6}
@@ -212,9 +230,19 @@ export function SignupForm() {
                   <InputOTPSlot index={5} />
                 </InputOTPGroup>
               </InputOTP>
-              <Button className="cursor-pointer" type="submit">
-                Verify OTP
-              </Button>
+              <div className="flex gap-5">
+                <Button
+                  className="cursor-pointer"
+                  type="button"
+                  variant="outline"
+                  onClick={handleChangeEmail}
+                >
+                  Change email
+                </Button>
+                <Button className="cursor-pointer" type="submit">
+                  Verify OTP
+                </Button>
+              </div>
             </form>
           ) : (
             <>
@@ -230,8 +258,9 @@ export function SignupForm() {
                 className="cursor-pointer"
                 type="submit"
                 form="signup-form"
+                disabled={sendOTPMutation.isPending}
               >
-                Send OTP
+                {sendOTPMutation.isPending ? <Spinner /> : "Send OTP"}
               </Button>
               <FieldDescription>
                 Already a user ? <Link href="/auth/login">Login</Link>

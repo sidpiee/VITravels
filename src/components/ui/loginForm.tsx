@@ -131,7 +131,7 @@ export function LoginForm() {
             Submit
           </Button>
           <FieldDescription>
-            First time here ? <Link href="/auth/signup">Signup</Link>
+            New here ? <Link href="/auth/signup">Signup</Link>
           </FieldDescription>
         </Field>
       </CardFooter>
