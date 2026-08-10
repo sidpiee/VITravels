@@ -1,11 +1,13 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation } from "@tanstack/react-query";
 import Link from "next/link";
-import { useState, type CSSProperties } from "react";
+import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
+
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -23,13 +25,13 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { ShineBorder } from "@/components/ui/shine-border";
 import {
   InputOTP,
   InputOTPGroup,
   InputOTPSlot,
 } from "@/components/ui/input-otp";
-import { useMutation } from "@tanstack/react-query";
+import { ShineBorder } from "@/components/ui/shine-border";
+
 import { Spinner } from "./spinner";
 
 const formSchema = z.object({
@@ -56,7 +58,12 @@ const formSchema = z.object({
     .min(8, "Password must be at least 8 characters.")
     .max(50, "Password cannot exceed 50 characters"),
 });
-
+type User = {
+  email: string;
+  username: string;
+  name: string;
+  password: string;
+};
 export function SignupForm() {
   const [sentOTP, setSentOTP] = useState(false);
   const [otp, setOtp] = useState("");
@@ -69,7 +76,31 @@ export function SignupForm() {
       password: "",
     },
   });
-
+  const saveUserMutation = useMutation({
+    mutationFn: async (User: User) => {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_API}/api/auth/register`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(User),
+        },
+      );
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message);
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      toast.message("User created successfully!");
+    },
+    onError: (err) => {
+      toast.error(err.message);
+    },
+  });
   const sendOTPMutation = useMutation({
     mutationFn: async (email: string) => {
       const res = await fetch(
@@ -97,11 +128,49 @@ export function SignupForm() {
     },
   });
 
+  const verifyOTPMutation = useMutation({
+    mutationFn: async ({ User, otp }: { User: User; otp: string }) => {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_API}/api/auth/verify-otp`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email: User.email, otp }),
+        },
+      );
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message);
+      }
+      return res.json();
+    },
+    onSuccess: (_data, variables) => {
+      saveUserMutation.mutate(variables.User);
+    },
+    onError: (err) => {
+      toast.error(err.message);
+    },
+  });
+
   function onSubmit(data: z.infer<typeof formSchema>) {
     sendOTPMutation.mutate(data.email);
   }
   function handleVerifyOtp(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (!/^\d{6}$/.test(otp)) {
+      toast.error("Enter a valid 6-digit OTP.");
+      return;
+    }
+    const signupData = form.getValues();
+    const addUser: User = {
+      email: signupData.email,
+      name: signupData.name,
+      username: signupData.username,
+      password: signupData.password,
+    };
+    verifyOTPMutation.mutate({ User: addUser, otp: otp });
   }
 
   function handleChangeEmail() {
@@ -239,7 +308,11 @@ export function SignupForm() {
                 >
                   Change email
                 </Button>
-                <Button className="cursor-pointer" type="submit">
+                <Button
+                  className="cursor-pointer"
+                  type="submit"
+                  disabled={verifyOTPMutation.isPending}
+                >
                   Verify OTP
                 </Button>
               </div>
