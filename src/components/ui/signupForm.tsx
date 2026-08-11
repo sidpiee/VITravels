@@ -8,6 +8,7 @@ import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
 
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -65,6 +66,7 @@ type User = {
   password: string;
 };
 export function SignupForm() {
+  const router = useRouter();
   const [sentOTP, setSentOTP] = useState(false);
   const [otp, setOtp] = useState("");
   const form = useForm<z.infer<typeof formSchema>>({
@@ -96,6 +98,7 @@ export function SignupForm() {
     },
     onSuccess: () => {
       toast.message("User created successfully!");
+      router.replace("/dashboard");
     },
     onError: (err) => {
       toast.error(err.message);
@@ -305,6 +308,7 @@ export function SignupForm() {
                   type="button"
                   variant="outline"
                   onClick={handleChangeEmail}
+                  disabled={verifyOTPMutation.isPending}
                 >
                   Change email
                 </Button>
@@ -324,6 +328,7 @@ export function SignupForm() {
                 type="button"
                 variant="outline"
                 onClick={() => form.reset()}
+                disabled={sendOTPMutation.isPending}
               >
                 Reset
               </Button>

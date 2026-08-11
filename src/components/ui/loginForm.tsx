@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
-import type { CSSProperties } from "react";
+
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
@@ -24,6 +24,8 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { useMutation } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 
 const formSchema = z.object({
   username: z
@@ -39,6 +41,7 @@ const formSchema = z.object({
 });
 
 export function LoginForm() {
+  const router = useRouter();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -46,23 +49,41 @@ export function LoginForm() {
       password: "",
     },
   });
-
+  const loginUserMutation = useMutation({
+    mutationFn: async ({
+      username,
+      password,
+    }: {
+      username: string;
+      password: string;
+    }) => {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_API}/api/auth/login`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ username, password }),
+        },
+      );
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message);
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      router.replace("/dashboard");
+    },
+    onError: (err) => {
+      toast.error(err.message);
+    },
+  });
   function onSubmit(data: z.infer<typeof formSchema>) {
-    const safeData = { username: data.username };
-
-    toast("You submitted the following values:", {
-      description: (
-        <pre className="mt-2 w-[320px] overflow-x-auto rounded-md bg-code p-4 text-code-foreground">
-          <code>{JSON.stringify(safeData, null, 2)}</code>
-        </pre>
-      ),
-      position: "bottom-right",
-      classNames: {
-        content: "flex flex-col gap-2",
-      },
-      style: {
-        "--border-radius": "calc(var(--radius)  + 4px)",
-      } as CSSProperties,
+    loginUserMutation.mutate({
+      username: data.username,
+      password: data.password,
     });
   }
 
@@ -91,6 +112,7 @@ export function LoginForm() {
                     placeholder="ben-dover"
                     autoComplete="username"
                     autoCapitalize="none"
+                    disabled={loginUserMutation.isPending}
                   />
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
@@ -112,6 +134,7 @@ export function LoginForm() {
                     placeholder="Your password"
                     autoComplete="current-password"
                     type="password"
+                    disabled={loginUserMutation.isPending}
                   />
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
@@ -124,10 +147,21 @@ export function LoginForm() {
       </CardContent>
       <CardFooter>
         <Field orientation="horizontal">
-          <Button type="button" variant="outline" onClick={() => form.reset()}>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => form.reset()}
+            disabled={loginUserMutation.isPending}
+            className="cursor-pointer"
+          >
             Reset
           </Button>
-          <Button type="submit" form="login-form">
+          <Button
+            type="submit"
+            form="login-form"
+            disabled={loginUserMutation.isPending}
+            className="cursor-pointer"
+          >
             Submit
           </Button>
           <FieldDescription>
