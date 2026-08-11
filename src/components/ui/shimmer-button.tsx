@@ -46,7 +46,7 @@ export const ShimmerButton = React.forwardRef<
         }
         className={cn(
           "group relative z-0 flex cursor-pointer items-center justify-center overflow-hidden [border-radius:var(--radius)] border border-foreground/10 px-6 py-3 whitespace-nowrap text-foreground [background:var(--bg)]",
-          "shadow-[0_8px_24px_color-mix(in_oklch,var(--foreground)_14%,transparent)] transition-all duration-300 ease-in-out hover:shadow-[0_12px_32px_color-mix(in_oklch,var(--foreground)_28%,transparent)] active:translate-y-px active:shadow-[0_6px_16px_color-mix(in_oklch,var(--foreground)_20%,transparent)]",
+          "shadow-[0_8px_24px_color-mix(in_oklch,var(--foreground)_14%,transparent)] transition-all duration-300 ease-in-out hover:shadow-[0_12px_32px_color-mix(in_oklch,var(--foreground)_28%,transparent)] active:translate-y-px active:shadow-[0_6px_16px_color-mix(in_oklch,var(--foreground)_20%,transparent)] dark:shadow-[0_8px_20px_rgb(255_255_255_/_0.06)] dark:hover:shadow-[0_10px_24px_rgb(255_255_255_/_0.11)] dark:active:shadow-[0_6px_16px_rgb(255_255_255_/_0.08)]",
           className,
         )}
         ref={ref}
@@ -72,16 +72,16 @@ export const ShimmerButton = React.forwardRef<
           className={cn(
             "absolute inset-0 size-full",
 
-            "[border-radius:var(--radius)] px-4 py-1.5 text-sm font-medium [box-shadow:inset_0_-8px_10px_color-mix(in_oklch,var(--foreground)_16%,transparent)]",
+            "[border-radius:var(--radius)] px-4 py-1.5 text-sm font-medium [box-shadow:inset_0_-8px_10px_color-mix(in_oklch,var(--foreground)_16%,transparent)] dark:[box-shadow:inset_0_-8px_10px_rgb(255_255_255_/_0.08)]",
 
             // transition
             "transform-gpu transition-all duration-300 ease-in-out",
 
             // on hover
-            "group-hover:[box-shadow:inset_0_-6px_12px_color-mix(in_oklch,var(--foreground)_30%,transparent)]",
+            "group-hover:[box-shadow:inset_0_-6px_12px_color-mix(in_oklch,var(--foreground)_30%,transparent)] dark:group-hover:[box-shadow:inset_0_-6px_12px_rgb(255_255_255_/_0.14)]",
 
             // on click
-            "group-active:[box-shadow:inset_0_-10px_12px_color-mix(in_oklch,var(--foreground)_36%,transparent)]",
+            "group-active:[box-shadow:inset_0_-10px_12px_color-mix(in_oklch,var(--foreground)_36%,transparent)] dark:group-active:[box-shadow:inset_0_-10px_12px_rgb(255_255_255_/_0.18)]",
           )}
         />
 

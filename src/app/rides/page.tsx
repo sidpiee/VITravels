@@ -54,10 +54,17 @@ export default function Rides() {
           className="text-primary"
         />
       </svg>
-      <div className="relative z-10 m-20">
+
+      <div className="flex justify-end items-center h-110 flex-col gap-5">
+        <h1 className="font-heading2 font-semibold text-3xl">
+          Start creating your{" "}
+          <span className="bg-linear-to-b from-purple-300 to-purple-700 bg-clip-text text-transparent">
+            rides here!
+          </span>
+        </h1>
         <Dialog>
           <DialogTrigger asChild>
-            <ShimmerButton shimmerDuration="2s">
+            <ShimmerButton shimmerDuration="2s" shimmerColor="#FFADFF">
               <span className="flex items-center gap-2">
                 Create Ride
                 <Plus className="size-4" />
@@ -73,15 +80,6 @@ export default function Rides() {
             <CreateRideForm />
           </DialogContent>
         </Dialog>
-      </div>
-
-      <div className="flex justify-center items-center h-80">
-        <h1 className="font-heading2 font-semibold text-6xl">
-          Start creating your{" "}
-          <span className="bg-linear-to-b from-purple-300 to-purple-700 bg-clip-text text-transparent">
-            rides here!
-          </span>
-        </h1>
       </div>
     </div>
   );
