@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import {
+  Funnel_Display,
   Geist,
   Geist_Mono,
   Inter,
@@ -8,8 +9,8 @@ import {
 import "./globals.css";
 import { ThemeProvider } from "next-themes";
 import { NavMenu } from "@/components/layout/navbar";
-import { cn } from "@/lib/utils";
 import { Toaster } from "@/components/ui/sonner";
+import { cn } from "@/lib/utils";
 import QueryProvider from "@/services/QueryProvider";
 
 const special = Special_Gothic_Expanded_One({
@@ -19,6 +20,12 @@ const special = Special_Gothic_Expanded_One({
 });
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
+
+const funnelDisplay = Funnel_Display({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700", "800"],
+  variable: "--font-funnel-display",
+});
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -45,6 +52,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         "antialiased",
         geistSans.variable,
         geistMono.variable,
+        funnelDisplay.variable,
         "font-sans",
         inter.variable,
       )}

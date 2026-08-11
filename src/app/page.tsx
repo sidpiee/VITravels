@@ -9,7 +9,7 @@ export default function Home() {
         className="bg-cover absolute bg-center z-0 h-screen"
       />
       <div className="flex items-center justify-start h-screen px-10 ">
-        <h1 className="z-10 text-white text-4xl font-extrabold font-heading">
+        <h1 className="[word-spacing:8px] z-10 text-white text-4xl font-extrabold font-heading">
           Find your next travel-buddy{" "}
           <span className="bg-linear-to-l from-purple-500 to-white bg-clip-text text-transparent">
             on
