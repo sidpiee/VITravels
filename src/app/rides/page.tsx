@@ -1,6 +1,13 @@
 import { Plus } from "lucide-react";
+import { CreateRideForm } from "@/components/ui/createRideForm";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { RippleButton } from "@/components/ui/ripple-button";
-
 export default function Rides() {
   return (
     <div className="relative isolate min-h-screen w-full overflow-x-hidden bg-background flex flex-col">
@@ -48,16 +55,26 @@ export default function Rides() {
         />
       </svg>
       <div className="relative z-10 m-20">
-        <RippleButton
-          rippleColor="#B058B0"
-          className="bg-transparent dark:border-purple-300/50 border-purple-700/50 border"
-        >
-          <span className="flex items-center gap-2">
-            Create Ride
-            <Plus className="size-4" />
-          </span>
-        </RippleButton>
+        <Dialog>
+          <DialogTrigger asChild>
+            <RippleButton>
+              <span className="flex items-center gap-2">
+                Create Ride
+                <Plus className="size-4" />
+              </span>
+            </RippleButton>
+          </DialogTrigger>
+
+          <DialogContent className="max-h-[90vh] w-full overflow-y-auto sm:max-w-2xl">
+            <DialogHeader className="flex items-center">
+              <DialogTitle>Create a ride</DialogTitle>
+            </DialogHeader>
+
+            <CreateRideForm />
+          </DialogContent>
+        </Dialog>
       </div>
+
       <div className="flex justify-center items-center h-80">
         <h1 className="font-heading2 font-semibold text-6xl">
           Start creating your{" "}
