@@ -1,7 +1,8 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { startOfDay } from "date-fns";
+import { useMutation } from "@tanstack/react-query";
+import { format, startOfDay } from "date-fns";
 import {
   CalendarDays,
   Clock4,
@@ -9,7 +10,6 @@ import {
   MapPinHouse,
   UserRound,
 } from "lucide-react";
-import type * as React from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
@@ -31,6 +31,8 @@ import {
 
 import { Calendar } from "./calendar";
 
+const timePattern = /^([01]\d|2[0-3]):([0-5]\d)$/;
+
 const formSchema = z
   .object({
     from: z
@@ -46,15 +48,20 @@ const formSchema = z
     availableSeats: z
       .number({ error: "Enter the number of available seats." })
       .min(1, "At least 1 seat is required.")
-      .max(8, "A maximum of 6 seats is allowed.")
+      .max(8, "A maximum of 8 seats is allowed.")
       .refine(Number.isInteger, "Seats must be a whole number."),
     rideDate: z.date({ error: "Select a ride date." }),
     rideTime: z
       .string()
-      .regex(/^([01]\d|2[0-3]):([0-5]\d)$/, "Select a valid ride time."),
+      .regex(timePattern, "Use 24-hour time in HH:mm format.")
+      .refine(
+        (value) =>
+          !timePattern.test(value) || Number(value.slice(3)) % 15 === 0,
+        "Choose a time in 15-minute intervals.",
+      ),
     price: z
       .number({ error: "Enter a price." })
-      .min(0, "Price cannot be negative.")
+      .min(1, "Price cannot be negative.")
       .refine(Number.isInteger, "Price must be a whole number."),
   })
   .refine((values) => values.from.toLowerCase() !== values.to.toLowerCase(), {
@@ -63,6 +70,24 @@ const formSchema = z
   });
 
 type FormValues = z.infer<typeof formSchema>;
+type CreateRidePayload = {
+  from: string;
+  destination: string;
+  date: string;
+  time: string;
+  availableSeats: number;
+  price: number;
+};
+
+function formatTimeInput(value: string) {
+  const digits = value.replace(/\D/g, "").slice(0, 4);
+
+  if (digits.length <= 2) {
+    return digits;
+  }
+
+  return `${digits.slice(0, 2)}:${digits.slice(2)}`;
+}
 
 export function CreateRideForm() {
   const form = useForm<FormValues>({
@@ -73,30 +98,40 @@ export function CreateRideForm() {
       rideTime: "",
     },
   });
-
+  const createRideMutation = useMutation({
+    mutationFn: async (ride: CreateRidePayload) => {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_API}/api/rides/ride`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify(ride),
+        },
+      );
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message);
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      toast.message("ride created successfully!");
+    },
+    onError: (err) => {
+      toast.error(err.message);
+    },
+  });
   function onSubmit(data: FormValues) {
-    toast.success("Ride details are valid.", {
-      description: (
-        <pre className="mt-2 w-[320px] overflow-x-auto rounded-md bg-code p-4 text-code-foreground">
-          <code>
-            {JSON.stringify(
-              {
-                ...data,
-                rideDate: data.rideDate.toLocaleDateString(),
-              },
-              null,
-              2,
-            )}
-          </code>
-        </pre>
-      ),
-      position: "bottom-right",
-      classNames: {
-        content: "flex flex-col gap-2",
-      },
-      style: {
-        "--border-radius": "calc(var(--radius) + 4px)",
-      } as React.CSSProperties,
+    createRideMutation.mutate({
+      from: data.from,
+      destination: data.to,
+      date: format(data.rideDate, "yyyy-MM-dd"),
+      time: data.rideTime,
+      availableSeats: data.availableSeats,
+      price: data.price,
     });
   }
 
@@ -259,13 +294,20 @@ export function CreateRideForm() {
                     className="w-full max-w-sm"
                   >
                     <FieldLabel htmlFor="create-ride-time">
-                      Ride time
+                      Ride time (24-hour)
                     </FieldLabel>
                     <Input
                       {...field}
                       id="create-ride-time"
-                      type="time"
-                      step={900}
+                      type="text"
+                      inputMode="numeric"
+                      placeholder="HH:mm"
+                      maxLength={5}
+                      pattern="[0-9]{2}:[0-9]{2}"
+                      autoComplete="off"
+                      onChange={(event) =>
+                        field.onChange(formatTimeInput(event.target.value))
+                      }
                       aria-invalid={fieldState.invalid}
                     />
                     {fieldState.invalid && (

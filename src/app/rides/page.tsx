@@ -7,7 +7,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { RippleButton } from "@/components/ui/ripple-button";
+import { ShimmerButton } from "@/components/ui/shimmer-button";
 export default function Rides() {
   return (
     <div className="relative isolate min-h-screen w-full overflow-x-hidden bg-background flex flex-col">
@@ -57,12 +57,12 @@ export default function Rides() {
       <div className="relative z-10 m-20">
         <Dialog>
           <DialogTrigger asChild>
-            <RippleButton>
+            <ShimmerButton shimmerDuration="2s">
               <span className="flex items-center gap-2">
                 Create Ride
                 <Plus className="size-4" />
               </span>
-            </RippleButton>
+            </ShimmerButton>
           </DialogTrigger>
 
           <DialogContent className="max-h-[90vh] w-full overflow-y-auto sm:max-w-2xl">
