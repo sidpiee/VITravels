@@ -222,7 +222,7 @@ export function CreateRideForm() {
                       id="create-ride-seats"
                       type="number"
                       min={1}
-                      max={6}
+                      max={8}
                       step={1}
                       inputMode="numeric"
                       value={field.value ?? ""}

@@ -1,5 +1,6 @@
 import { Plus } from "lucide-react";
 import { CreateRideForm } from "@/components/ui/createRideForm";
+
 import {
   Dialog,
   DialogContent,
@@ -7,11 +8,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import RidesList from "@/components/ui/rides-list";
 import { ShimmerButton } from "@/components/ui/shimmer-button";
 export default function Rides() {
   return (
     <div className="relative isolate min-h-screen w-full overflow-x-hidden bg-background flex flex-col">
-      <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
+      <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
         <div
           className="
       absolute
@@ -27,7 +29,7 @@ export default function Rides() {
         />
       </div>
       <svg
-        className="absolute left-0 top-1/2 h-100 w-full -translate-y-1/2 opacity-10"
+        className="pointer-events-none fixed left-0 top-1/2 z-0 h-100 w-full -translate-y-1/2 opacity-10"
         viewBox="0 0 1440 400"
         preserveAspectRatio="none"
         fill="none"
@@ -55,7 +57,7 @@ export default function Rides() {
         />
       </svg>
 
-      <div className="flex justify-end items-center h-110 flex-col gap-5">
+      <div className="relative z-10 flex min-h-110 flex-col items-center justify-end gap-5 pb-10">
         <h1 className="font-heading2 font-semibold text-3xl">
           Start creating your{" "}
           <span className="bg-linear-to-b from-purple-300 to-purple-700 bg-clip-text text-transparent">
@@ -80,6 +82,9 @@ export default function Rides() {
             <CreateRideForm />
           </DialogContent>
         </Dialog>
+        <div className="grid grid-cols-3 gap-3">
+          <RidesList />
+        </div>
       </div>
     </div>
   );

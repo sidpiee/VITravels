@@ -41,6 +41,11 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --color-ride-gradient-from: var(--ride-gradient-from);
+  --color-ride-gradient-via: var(--ride-gradient-via);
+  --color-ride-gradient-to: var(--ride-gradient-to);
+  --color-ride-accent: var(--ride-accent);
+  --color-ride-accent-foreground: var(--ride-accent-foreground);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -89,6 +94,11 @@
   --hero-foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
+  --ride-gradient-from: oklch(0.76 0.18 310);
+  --ride-gradient-via: oklch(0.58 0.23 300);
+  --ride-gradient-to: oklch(0.38 0.2 295);
+  --ride-accent: oklch(0.52 0.2 300);
+  --ride-accent-foreground: oklch(0.98 0.02 300);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
   --primary: oklch(0.205 0 0);
@@ -125,6 +135,11 @@
   --hero-foreground: oklch(0.985 0 0);
   --card: oklch(0.205 0 0);
   --card-foreground: oklch(0.985 0 0);
+  --ride-gradient-from: oklch(0.78 0.2 310);
+  --ride-gradient-via: oklch(0.59 0.24 300);
+  --ride-gradient-to: oklch(0.32 0.2 295);
+  --ride-accent: oklch(0.74 0.2 300);
+  --ride-accent-foreground: oklch(0.98 0.02 300);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
   --primary: oklch(0.922 0 0);
