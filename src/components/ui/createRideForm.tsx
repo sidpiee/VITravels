@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { format, startOfDay } from "date-fns";
 import {
   CalendarDays,
@@ -28,6 +28,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import type { ride } from "@/types/ride";
 
 import { Calendar } from "./calendar";
 
@@ -88,15 +89,23 @@ function formatTimeInput(value: string) {
 
   return `${digits.slice(0, 2)}:${digits.slice(2)}`;
 }
-
-export function CreateRideForm() {
+type CreateRideFormProps = {
+  ride?: ride;
+};
+export function CreateRideForm({ ride }: CreateRideFormProps) {
+  const queryClient = useQueryClient();
+  const isEditing = Boolean(ride?._id);
+  const initialValues = {
+    from: ride?.from ?? "",
+    to: ride?.destination ?? "",
+    availableSeats: ride?.availableSeats,
+    rideDate: ride?.date ? new Date(ride.date) : undefined,
+    rideTime: ride?.time ?? "",
+    price: ride?.price,
+  };
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      from: "",
-      to: "",
-      rideTime: "",
-    },
+    defaultValues: initialValues,
   });
   const createRideMutation = useMutation({
     mutationFn: async (ride: CreateRidePayload) => {
@@ -118,21 +127,69 @@ export function CreateRideForm() {
       return res.json();
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["my-rides"],
+      });
       toast.message("ride created successfully!");
     },
     onError: (err) => {
       toast.error(err.message);
     },
   });
+  const updateRideMutation = useMutation({
+    mutationFn: async ({
+      id,
+      payload,
+    }: {
+      id: string;
+      payload: CreateRidePayload;
+    }) => {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_API}/api/rides/rides/${id}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify(payload),
+        },
+      );
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message);
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["my-rides"],
+      });
+      toast.message("ride updated successfully!");
+    },
+    onError: (err) => {
+      toast.error(err.message);
+    },
+  });
   function onSubmit(data: FormValues) {
-    createRideMutation.mutate({
+    const payload: CreateRidePayload = {
       from: data.from,
       destination: data.to,
       date: format(data.rideDate, "yyyy-MM-dd"),
       time: data.rideTime,
       availableSeats: data.availableSeats,
       price: data.price,
-    });
+    };
+
+    if (isEditing && ride) {
+      updateRideMutation.mutate({
+        id: ride._id,
+        payload,
+      });
+      return;
+    }
+
+    createRideMutation.mutate(payload);
   }
 
   return (
@@ -364,11 +421,15 @@ export function CreateRideForm() {
         </form>
       </CardContent>
       <CardFooter className="justify-end gap-3 px-0 pt-6">
-        <Button type="button" variant="outline" onClick={() => form.reset()}>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => form.reset(initialValues)}
+        >
           Reset
         </Button>
         <Button type="submit" form="create-ride-form">
-          Create ride
+          {isEditing ? "Update ride" : "Create ride"}
         </Button>
       </CardFooter>
     </Card>

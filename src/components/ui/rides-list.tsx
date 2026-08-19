@@ -8,12 +8,20 @@ import {
   IndianRupee,
   Users,
 } from "lucide-react";
+import { toast } from "sonner";
 
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import type { ride } from "@/types/ride";
 import { Button } from "./button";
 import { Card } from "./card";
+import { CreateRideForm } from "./createRideForm";
 import { Progress } from "./progress";
-import { toast } from "sonner";
 
 export default function RidesList() {
   const rideQuery = useQuery({
@@ -59,18 +67,19 @@ function formatRideDate(value: string) {
   }).format(date);
 }
 
-function RideCard({
-  from,
-  destination,
-  date,
-  time,
-  price,
-  availableSeats,
-  passengers,
-  creator,
-  _id,
-  status,
-}: ride) {
+function RideCard(rideData: ride) {
+  const {
+    from,
+    destination,
+    date,
+    time,
+    price,
+    availableSeats,
+    passengers,
+    creator,
+    _id,
+    status,
+  } = rideData;
   const queryClient = useQueryClient();
   const occupiedSeats = passengers.length;
   const totalSeats = availableSeats + occupiedSeats;
@@ -225,12 +234,25 @@ function RideCard({
 
             <div className="h-5 w-px bg-border" aria-hidden="true" />
 
-            <Button
-              variant="outline"
-              className="cursor-pointer border-ride-accent bg-transparent px-3 py-1.5 text-ride-accent transition-colors duration-200 ease-out hover:border-ride-action-hover-border hover:bg-ride-action-hover hover:text-ride-action-hover-foreground dark:hover:border-ride-action-hover-border dark:hover:bg-ride-action-hover dark:hover:text-ride-action-hover-foreground"
-            >
-              Edit
-            </Button>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button
+                  variant="outline"
+                  disabled={status !== "active"}
+                  className="cursor-pointer border-ride-accent bg-transparent px-3 py-1.5 text-ride-accent transition-colors duration-200 ease-out hover:border-ride-action-hover-border hover:bg-ride-action-hover hover:text-ride-action-hover-foreground dark:hover:border-ride-action-hover-border dark:hover:bg-ride-action-hover dark:hover:text-ride-action-hover-foreground"
+                >
+                  Edit
+                </Button>
+              </DialogTrigger>
+
+              <DialogContent className="max-h-[90vh] w-full overflow-y-auto sm:max-w-2xl">
+                <DialogHeader className="flex items-center">
+                  <DialogTitle>Update your ride</DialogTitle>
+                </DialogHeader>
+
+                <CreateRideForm ride={rideData} />
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
       </div>
