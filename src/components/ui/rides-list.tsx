@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowRight,
   CalendarDays,
@@ -10,8 +10,10 @@ import {
 } from "lucide-react";
 
 import type { ride } from "@/types/ride";
+import { Button } from "./button";
 import { Card } from "./card";
 import { Progress } from "./progress";
+import { toast } from "sonner";
 
 export default function RidesList() {
   const rideQuery = useQuery({
@@ -32,7 +34,6 @@ export default function RidesList() {
       return res.json();
     },
   });
-  console.log(rideQuery.data);
 
   return (
     <>
@@ -67,10 +68,37 @@ function RideCard({
   availableSeats,
   passengers,
   creator,
+  _id,
+  status,
 }: ride) {
+  const queryClient = useQueryClient();
   const occupiedSeats = passengers.length;
   const totalSeats = availableSeats + occupiedSeats;
-
+  const cancelRideMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_API}/api/rides/rides/${id}/cancel`,
+        {
+          method: "PATCH",
+          credentials: "include",
+        },
+      );
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message);
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["my-rides"],
+      });
+      toast.success("Ride cancelled!");
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
   return (
     <Card className="group relative w-full max-w-md gap-0 overflow-hidden rounded-3xl border border-border bg-card p-2 text-card-foreground shadow-2xl shadow-ride-accent/20 backdrop-blur-xl">
       <div className="relative overflow-hidden rounded-3xl border-b border-ride-accent-foreground/20 bg-linear-to-br from-ride-gradient-from via-ride-gradient-via to-ride-gradient-to px-6 pb-6 pt-5">
@@ -79,7 +107,7 @@ function RideCard({
 
         <div className="relative flex items-center justify-end">
           <span className="inline-flex items-center gap-2 rounded-full border border-ride-accent-foreground/30 bg-card/15 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-ride-accent-foreground/85">
-            Active ride
+            {status} ride
             <span className="size-1.5 rounded-full bg-ride-accent-foreground shadow-ride-accent-foreground/70" />
           </span>
         </div>
@@ -173,7 +201,7 @@ function RideCard({
           />
         </div>
 
-        <div className="flex items-center justify-between border-t border-border pt-4">
+        <div className="flex items-center justify-between gap-4 border-t border-border pt-4">
           <div className="flex items-center gap-3">
             <div className="flex size-9 items-center justify-center rounded-full bg-linear-to-br from-ride-gradient-from to-ride-gradient-to font-heading2 text-sm font-semibold text-ride-accent-foreground ring-2 ring-ride-accent/20">
               {creator.name ? creator.name.charAt(0) : "Y"}
@@ -184,6 +212,25 @@ function RideCard({
                 {creator.name ?? "You"}
               </p>
             </div>
+          </div>
+          <div className="flex shrink-0 items-center justify-end gap-2">
+            <Button
+              variant="destructive"
+              className="px-3 py-1.5 cursor-pointer"
+              onClick={() => cancelRideMutation.mutate(_id)}
+              disabled={cancelRideMutation.isPending || status !== "active"}
+            >
+              Cancel Ride
+            </Button>
+
+            <div className="h-5 w-px bg-border" aria-hidden="true" />
+
+            <Button
+              variant="outline"
+              className="cursor-pointer border-ride-accent bg-transparent px-3 py-1.5 text-ride-accent transition-colors duration-200 ease-out hover:border-ride-action-hover-border hover:bg-ride-action-hover hover:text-ride-action-hover-foreground dark:hover:border-ride-action-hover-border dark:hover:bg-ride-action-hover dark:hover:text-ride-action-hover-foreground"
+            >
+              Edit
+            </Button>
           </div>
         </div>
       </div>
