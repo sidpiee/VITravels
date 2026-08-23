@@ -1,15 +1,4 @@
-import { Plus } from "lucide-react";
-import { CreateRideForm } from "@/components/ui/createRideForm";
-
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import RidesList from "@/components/ui/rides-list";
-import { ShimmerButton } from "@/components/ui/shimmer-button";
 export default function Rides() {
   return (
     <div className="relative isolate min-h-screen w-full overflow-x-hidden bg-background flex flex-col">
@@ -57,35 +46,7 @@ export default function Rides() {
         />
       </svg>
 
-      <div className="relative z-10 flex min-h-110 flex-col items-center justify-end gap-5 pb-10">
-        <h1 className="font-heading2 font-semibold text-3xl">
-          Start creating your{" "}
-          <span className="bg-linear-to-b from-purple-300 to-purple-700 bg-clip-text text-transparent">
-            rides here!
-          </span>
-        </h1>
-        <Dialog>
-          <DialogTrigger asChild>
-            <ShimmerButton shimmerDuration="2s" shimmerColor="#FFADFF">
-              <span className="flex items-center gap-2">
-                Create Ride
-                <Plus className="size-4" />
-              </span>
-            </ShimmerButton>
-          </DialogTrigger>
-
-          <DialogContent className="max-h-[90vh] w-full overflow-y-auto sm:max-w-2xl">
-            <DialogHeader className="flex items-center">
-              <DialogTitle>Create a ride</DialogTitle>
-            </DialogHeader>
-
-            <CreateRideForm />
-          </DialogContent>
-        </Dialog>
-        <div className="grid grid-cols-3 gap-3">
-          <RidesList />
-        </div>
-      </div>
+      <RidesList />
     </div>
   );
 }

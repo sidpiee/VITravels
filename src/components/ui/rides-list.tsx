@@ -6,6 +6,7 @@ import {
   CalendarDays,
   Clock3,
   IndianRupee,
+  Plus,
   Users,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -17,11 +18,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
 import type { ride } from "@/types/ride";
 import { Button } from "./button";
 import { Card } from "./card";
 import { CreateRideForm } from "./createRideForm";
 import { Progress } from "./progress";
+import { ShimmerButton } from "./shimmer-button";
 
 export default function RidesList() {
   const rideQuery = useQuery({
@@ -43,12 +46,68 @@ export default function RidesList() {
     },
   });
 
+  const rides: ride[] = rideQuery.data?.rides ?? [];
+  const isEmptyState = rideQuery.isSuccess && rides.length === 0;
+
   return (
-    <>
-      {rideQuery?.data?.rides?.map((thisRide: ride) => (
-        <RideCard key={thisRide._id} {...thisRide} />
-      ))}
-    </>
+    <div
+      className={cn(
+        "relative z-10 w-full",
+        isEmptyState
+          ? "flex min-h-110 flex-col items-center justify-center gap-5 pb-10"
+          : "flex flex-col items-start gap-6 px-6 pb-10 pt-8 mt-20",
+      )}
+    >
+      {isEmptyState ? (
+        <>
+          <h1 className="font-heading2 text-3xl font-semibold">
+            Start creating your{" "}
+            <span className="bg-linear-to-b from-purple-300 to-purple-700 bg-clip-text text-transparent">
+              rides here!
+            </span>
+          </h1>
+          <CreateRideDialog />
+        </>
+      ) : (
+        <>
+          <div className="flex w-full items-center justify-between pr-15">
+            <p className="bg-linear-to-r from-purple-500 to-purple-700 bg-clip-text font-heading2 text-5xl font-bold text-transparent dark:to-white">
+              My rides
+            </p>
+            <CreateRideDialog />
+          </div>
+
+          <div className="grid w-full grid-cols-3 gap-3">
+            {rides.map((thisRide) => (
+              <RideCard key={thisRide._id} {...thisRide} />
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+function CreateRideDialog() {
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <ShimmerButton shimmerDuration="2s" shimmerColor="#FFADFF">
+          <span className="flex items-center gap-2">
+            Create Ride
+            <Plus className="size-4" />
+          </span>
+        </ShimmerButton>
+      </DialogTrigger>
+
+      <DialogContent className="max-h-[90vh] w-full overflow-y-auto sm:max-w-2xl">
+        <DialogHeader className="flex items-center">
+          <DialogTitle>Create a ride</DialogTitle>
+        </DialogHeader>
+
+        <CreateRideForm />
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -117,7 +176,16 @@ function RideCard(rideData: ride) {
         <div className="relative flex items-center justify-end">
           <span className="inline-flex items-center gap-2 rounded-full border border-ride-accent-foreground/30 bg-card/15 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-ride-accent-foreground/85">
             {status} ride
-            <span className="size-1.5 rounded-full bg-ride-accent-foreground shadow-ride-accent-foreground/70" />
+            <span
+              className={cn(
+                "size-1.5 rounded-full shadow-ride-accent-foreground/70 ",
+                status === "active"
+                  ? "bg-green-400"
+                  : status === "cancelled"
+                    ? "bg-red-400"
+                    : "bg-sky-400",
+              )}
+            />
           </span>
         </div>
 

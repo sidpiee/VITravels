@@ -102,7 +102,7 @@
   --ride-gradient-to: oklch(0.38 0.2 295);
   --ride-accent: oklch(0.52 0.2 300);
   --ride-accent-foreground: oklch(0.98 0.02 300);
-  --ride-action-hover: oklch(0.93 0.07 300);
+  --ride-action-hover: oklch(0.86 0.12 300);
   --ride-action-hover-foreground: oklch(0.145 0 0);
   --ride-action-hover-border: oklch(0.52 0.2 300);
   --popover: oklch(1 0 0);
