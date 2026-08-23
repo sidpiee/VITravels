@@ -91,8 +91,9 @@ function formatTimeInput(value: string) {
 }
 type CreateRideFormProps = {
   ride?: ride;
+  onSuccess: () => void;
 };
-export function CreateRideForm({ ride }: CreateRideFormProps) {
+export function CreateRideForm({ ride, onSuccess }: CreateRideFormProps) {
   const queryClient = useQueryClient();
   const isEditing = Boolean(ride?._id);
   const initialValues = {
@@ -131,6 +132,7 @@ export function CreateRideForm({ ride }: CreateRideFormProps) {
         queryKey: ["my-rides"],
       });
       toast.message("ride created successfully!");
+      onSuccess?.();
     },
     onError: (err) => {
       toast.error(err.message);
@@ -166,6 +168,7 @@ export function CreateRideForm({ ride }: CreateRideFormProps) {
         queryKey: ["my-rides"],
       });
       toast.message("ride updated successfully!");
+      onSuccess?.();
     },
     onError: (err) => {
       toast.error(err.message);

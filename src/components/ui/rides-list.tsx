@@ -25,6 +25,7 @@ import { Card } from "./card";
 import { CreateRideForm } from "./createRideForm";
 import { Progress } from "./progress";
 import { ShimmerButton } from "./shimmer-button";
+import { useState } from "react";
 
 export default function RidesList() {
   const rideQuery = useQuery({
@@ -89,8 +90,9 @@ export default function RidesList() {
 }
 
 function CreateRideDialog() {
+  const [open, setOpen] = useState(false);
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <ShimmerButton shimmerDuration="2s" shimmerColor="#FFADFF">
           <span className="flex items-center gap-2">
@@ -105,7 +107,7 @@ function CreateRideDialog() {
           <DialogTitle>Create a ride</DialogTitle>
         </DialogHeader>
 
-        <CreateRideForm />
+        <CreateRideForm onSuccess={() => setOpen(false)} />
       </DialogContent>
     </Dialog>
   );
@@ -139,6 +141,7 @@ function RideCard(rideData: ride) {
     _id,
     status,
   } = rideData;
+  const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
   const occupiedSeats = passengers.length;
   const totalSeats = availableSeats + occupiedSeats;
@@ -302,7 +305,7 @@ function RideCard(rideData: ride) {
 
             <div className="h-5 w-px bg-border" aria-hidden="true" />
 
-            <Dialog>
+            <Dialog open={open} onOpenChange={setOpen}>
               <DialogTrigger asChild>
                 <Button
                   variant="outline"
@@ -318,7 +321,12 @@ function RideCard(rideData: ride) {
                   <DialogTitle>Update your ride</DialogTitle>
                 </DialogHeader>
 
-                <CreateRideForm ride={rideData} />
+                <CreateRideForm
+                  ride={rideData}
+                  onSuccess={() => {
+                    setOpen(false);
+                  }}
+                />
               </DialogContent>
             </Dialog>
           </div>
