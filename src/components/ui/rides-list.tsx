@@ -71,7 +71,7 @@ export default function RidesList() {
         </>
       ) : (
         <>
-          <div className="flex w-full items-center justify-between pr-15">
+          <div className="flex w-full items-center justify-between pr-10">
             <p className="bg-linear-to-r from-purple-500 to-purple-700 bg-clip-text font-heading2 text-5xl font-bold text-transparent dark:to-white">
               My rides
             </p>

@@ -1,5 +1,4 @@
-import RidesList from "@/components/ui/rides-list";
-export default function Rides() {
+export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="relative isolate min-h-screen w-full overflow-x-hidden bg-background flex flex-col">
       <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
@@ -17,6 +16,7 @@ export default function Rides() {
     "
         />
       </div>
+
       <svg
         className="pointer-events-none fixed left-0 top-1/2 z-0 h-100 w-full -translate-y-1/2 opacity-10"
         viewBox="0 0 1440 400"
@@ -46,7 +46,7 @@ export default function Rides() {
         />
       </svg>
 
-      <RidesList />
+      {children}
     </div>
   );
 }
