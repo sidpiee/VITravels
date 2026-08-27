@@ -9,6 +9,7 @@ import {
   Plus,
   Users,
 } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 import {
@@ -25,7 +26,10 @@ import { Card } from "./card";
 import { CreateRideForm } from "./createRideForm";
 import { Progress } from "./progress";
 import { ShimmerButton } from "./shimmer-button";
-import { useState } from "react";
+
+type RideCardProps = ride & {
+  variant?: "owned" | "available";
+};
 
 export default function RidesList() {
   const rideQuery = useQuery({
@@ -72,7 +76,7 @@ export default function RidesList() {
       ) : (
         <>
           <div className="flex w-full items-center justify-between pr-10">
-            <p className="bg-linear-to-r from-purple-500 to-purple-700 bg-clip-text font-heading2 text-5xl font-bold text-transparent dark:to-white">
+            <p className="bg-linear-to-r from-purple-500 to-purple-700 bg-clip-text font-heading2 text-5xl font-bold text-transparent dark:to-purple-300">
               My rides
             </p>
             <CreateRideDialog />
@@ -128,7 +132,7 @@ function formatRideDate(value: string) {
   }).format(date);
 }
 
-function RideCard(rideData: ride) {
+export function RideCard({ variant = "owned", ...rideData }: RideCardProps) {
   const {
     from,
     destination,
@@ -284,52 +288,54 @@ function RideCard(rideData: ride) {
         <div className="flex items-center justify-between gap-4 border-t border-border pt-4">
           <div className="flex items-center gap-3">
             <div className="flex size-9 items-center justify-center rounded-full bg-linear-to-br from-ride-gradient-from to-ride-gradient-to font-heading2 text-sm font-semibold text-ride-accent-foreground ring-2 ring-ride-accent/20">
-              {creator.name ? creator.name.charAt(0) : "Y"}
+              {creator?.name ? creator?.name.charAt(0) : "Y"}
             </div>
             <div>
               <p className="text-xs text-muted-foreground">Created by</p>
               <p className="text-sm font-medium text-card-foreground/90">
-                {creator.name ?? "You"}
+                {creator?.name ?? "You"}
               </p>
             </div>
           </div>
-          <div className="flex shrink-0 items-center justify-end gap-2">
-            <Button
-              variant="destructive"
-              className="px-3 py-1.5 cursor-pointer"
-              onClick={() => cancelRideMutation.mutate(_id)}
-              disabled={cancelRideMutation.isPending || status !== "active"}
-            >
-              Cancel Ride
-            </Button>
+          {variant === "owned" && (
+            <div className="flex shrink-0 items-center justify-end gap-2">
+              <Button
+                variant="destructive"
+                className="px-3 py-1.5 cursor-pointer"
+                onClick={() => cancelRideMutation.mutate(_id)}
+                disabled={cancelRideMutation.isPending || status !== "active"}
+              >
+                Cancel Ride
+              </Button>
 
-            <div className="h-5 w-px bg-border" aria-hidden="true" />
+              <div className="h-5 w-px bg-border" aria-hidden="true" />
 
-            <Dialog open={open} onOpenChange={setOpen}>
-              <DialogTrigger asChild>
-                <Button
-                  variant="outline"
-                  disabled={status !== "active"}
-                  className="cursor-pointer border-ride-accent bg-transparent px-3 py-1.5 text-ride-accent transition-colors duration-200 ease-out hover:border-ride-action-hover-border hover:bg-ride-action-hover hover:text-ride-action-hover-foreground dark:hover:border-ride-action-hover-border dark:hover:bg-ride-action-hover dark:hover:text-ride-action-hover-foreground"
-                >
-                  Edit
-                </Button>
-              </DialogTrigger>
+              <Dialog open={open} onOpenChange={setOpen}>
+                <DialogTrigger asChild>
+                  <Button
+                    variant="outline"
+                    disabled={status !== "active"}
+                    className="cursor-pointer border-ride-accent bg-transparent px-3 py-1.5 text-ride-accent transition-colors duration-200 ease-out hover:border-ride-action-hover-border hover:bg-ride-action-hover hover:text-ride-action-hover-foreground dark:hover:border-ride-action-hover-border dark:hover:bg-ride-action-hover dark:hover:text-ride-action-hover-foreground"
+                  >
+                    Edit
+                  </Button>
+                </DialogTrigger>
 
-              <DialogContent className="max-h-[90vh] w-full overflow-y-auto sm:max-w-2xl">
-                <DialogHeader className="flex items-center">
-                  <DialogTitle>Update your ride</DialogTitle>
-                </DialogHeader>
+                <DialogContent className="max-h-[90vh] w-full overflow-y-auto sm:max-w-2xl">
+                  <DialogHeader className="flex items-center">
+                    <DialogTitle>Update your ride</DialogTitle>
+                  </DialogHeader>
 
-                <CreateRideForm
-                  ride={rideData}
-                  onSuccess={() => {
-                    setOpen(false);
-                  }}
-                />
-              </DialogContent>
-            </Dialog>
-          </div>
+                  <CreateRideForm
+                    ride={rideData}
+                    onSuccess={() => {
+                      setOpen(false);
+                    }}
+                  />
+                </DialogContent>
+              </Dialog>
+            </div>
+          )}
         </div>
       </div>
     </Card>
