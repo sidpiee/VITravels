@@ -19,6 +19,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { useCurrentUser } from "@/hooks/use-current-user";
 import { cn } from "@/lib/utils";
 import type { ride } from "@/types/ride";
 import { Button } from "./button";
@@ -146,6 +147,12 @@ export function RideCard({ variant = "owned", ...rideData }: RideCardProps) {
     status,
   } = rideData;
   const [open, setOpen] = useState(false);
+  const { data: currentUser } = useCurrentUser();
+  const creatorId = typeof creator === "string" ? creator : creator._id;
+  const creatorName =
+    typeof creator === "string" ? currentUser?.user.name : creator.name;
+  const isCreator = creatorId === currentUser?.user._id;
+  const creatorLabel = isCreator ? "You" : (creatorName ?? "Unknown");
   const queryClient = useQueryClient();
   const occupiedSeats = passengers.length;
   const totalSeats = availableSeats + occupiedSeats;
@@ -288,12 +295,12 @@ export function RideCard({ variant = "owned", ...rideData }: RideCardProps) {
         <div className="flex items-center justify-between gap-4 border-t border-border pt-4">
           <div className="flex items-center gap-3">
             <div className="flex size-9 items-center justify-center rounded-full bg-linear-to-br from-ride-gradient-from to-ride-gradient-to font-heading2 text-sm font-semibold text-ride-accent-foreground ring-2 ring-ride-accent/20">
-              {creator?.name ? creator?.name.charAt(0) : "Y"}
+              {creatorLabel.charAt(0)}
             </div>
             <div>
               <p className="text-xs text-muted-foreground">Created by</p>
               <p className="text-sm font-medium text-card-foreground/90">
-                {creator?.name ?? "You"}
+                {creatorLabel}
               </p>
             </div>
           </div>
