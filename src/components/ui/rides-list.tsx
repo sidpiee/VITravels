@@ -30,7 +30,7 @@ import { Progress } from "./progress";
 import { ShimmerButton } from "./shimmer-button";
 
 type RideCardProps = ride & {
-  variant?: "owned" | "available";
+  variant?: "owned" | "available" | "booked";
 };
 
 export default function RidesList() {
@@ -158,6 +158,7 @@ export function RideCard({ variant = "owned", ...rideData }: RideCardProps) {
   const hasBooked = Boolean(
     currentUserId && passengers.includes(currentUserId),
   );
+  const isBooked = variant === "booked" || hasBooked;
   const queryClient = useQueryClient();
   const occupiedSeats = passengers.length;
   const totalSeats = availableSeats + occupiedSeats;
@@ -235,7 +236,7 @@ export function RideCard({ variant = "owned", ...rideData }: RideCardProps) {
               )}
             />
           </span>
-          {hasBooked && (
+          {isBooked && (
             <span
               aria-live="polite"
               title="You have already booked this ride"
@@ -386,6 +387,14 @@ export function RideCard({ variant = "owned", ...rideData }: RideCardProps) {
                 </DialogContent>
               </Dialog>
             </div>
+          ) : variant === "booked" ? (
+            <Button
+              type="button"
+              variant="destructive"
+              className="cursor-pointer"
+            >
+              Cancel booking
+            </Button>
           ) : (
             <Button
               variant="default"

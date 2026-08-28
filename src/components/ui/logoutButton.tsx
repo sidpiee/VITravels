@@ -35,9 +35,9 @@ export function LogoutButton() {
   return (
     <>
       <Button
-        variant={"outline"}
+        variant="ghost"
         onClick={() => logoutMutation.mutate()}
-        className="cursor-pointer"
+        className="cursor-pointer text-destructive hover:bg-destructive/10 hover:text-destructive"
         disabled={logoutMutation.isPending}
       >
         Logout
