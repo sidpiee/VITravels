@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowRight,
   CalendarDays,
+  Check,
   Clock3,
   IndianRupee,
   Plus,
@@ -153,9 +154,42 @@ export function RideCard({ variant = "owned", ...rideData }: RideCardProps) {
     typeof creator === "string" ? currentUser?.user.name : creator.name;
   const isCreator = creatorId === currentUser?.user._id;
   const creatorLabel = isCreator ? "You" : (creatorName ?? "Unknown");
+  const currentUserId = currentUser?.user._id;
+  const hasBooked = Boolean(
+    currentUserId && passengers.includes(currentUserId),
+  );
   const queryClient = useQueryClient();
   const occupiedSeats = passengers.length;
   const totalSeats = availableSeats + occupiedSeats;
+  const bookRideMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_API}/api/bookings/create`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ rideId: id }),
+        },
+      );
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message);
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      toast.success("Booking created successfully");
+      queryClient.invalidateQueries({
+        queryKey: ["all-rides"],
+      });
+    },
+    onError: (err) => {
+      toast.error(err.message);
+    },
+  });
   const cancelRideMutation = useMutation({
     mutationFn: async (id: string) => {
       const res = await fetch(
@@ -187,7 +221,7 @@ export function RideCard({ variant = "owned", ...rideData }: RideCardProps) {
         <div className="absolute -right-12 -top-18 size-48 rounded-full bg-ride-accent-foreground/20 blur-3xl" />
         <div className="absolute -bottom-24 left-1/3 size-40 rounded-full bg-ride-gradient-from/25 blur-3xl" />
 
-        <div className="relative flex items-center justify-end">
+        <div className="relative flex items-center justify-end gap-2">
           <span className="inline-flex items-center gap-2 rounded-full border border-ride-accent-foreground/30 bg-card/15 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-ride-accent-foreground/85">
             {status} ride
             <span
@@ -201,6 +235,16 @@ export function RideCard({ variant = "owned", ...rideData }: RideCardProps) {
               )}
             />
           </span>
+          {hasBooked && (
+            <span
+              aria-live="polite"
+              title="You have already booked this ride"
+              className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500 bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-400"
+            >
+              <Check className="size-4" aria-hidden="true" />
+              Booked
+            </span>
+          )}
         </div>
 
         <div className="relative mt-8 flex items-end gap-3">
@@ -345,10 +389,21 @@ export function RideCard({ variant = "owned", ...rideData }: RideCardProps) {
           ) : (
             <Button
               variant="default"
+              onClick={() => bookRideMutation.mutate(_id)}
               className="px-3 py-1.5 cursor-pointer"
-              disabled={isCreator}
+              disabled={
+                isCreator ||
+                hasBooked ||
+                bookRideMutation.isPending ||
+                status !== "active" ||
+                availableSeats <= 0
+              }
             >
-              Book ride
+              {hasBooked
+                ? "Already booked"
+                : bookRideMutation.isPending
+                  ? "Booking..."
+                  : "Book ride"}
             </Button>
           )}
         </div>
