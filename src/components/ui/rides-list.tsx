@@ -60,7 +60,7 @@ export default function RidesList() {
       className={cn(
         "relative z-10 w-full",
         isEmptyState
-          ? "flex min-h-110 flex-col items-center justify-center gap-5 pb-10"
+          ? "flex min-h-screen flex-col items-center justify-center gap-5 pb-10"
           : "flex flex-col items-start gap-6 px-6 pb-10 pt-8 mt-20",
       )}
     >
@@ -304,7 +304,7 @@ export function RideCard({ variant = "owned", ...rideData }: RideCardProps) {
               </p>
             </div>
           </div>
-          {variant === "owned" && (
+          {variant === "owned" ? (
             <div className="flex shrink-0 items-center justify-end gap-2">
               <Button
                 variant="destructive"
@@ -342,6 +342,14 @@ export function RideCard({ variant = "owned", ...rideData }: RideCardProps) {
                 </DialogContent>
               </Dialog>
             </div>
+          ) : (
+            <Button
+              variant="default"
+              className="px-3 py-1.5 cursor-pointer"
+              disabled={isCreator}
+            >
+              Book ride
+            </Button>
           )}
         </div>
       </div>

@@ -14,9 +14,12 @@ import {
 } from "@/components/ui/navigation-menu";
 import { Button } from "../ui/button";
 import { Moon, Sun } from "lucide-react";
+import { LogoutButton } from "../ui/logoutButton";
+import { useCurrentUser } from "@/hooks/use-current-user";
 
 export function NavMenu() {
   const { theme, setTheme } = useTheme();
+  const { data: user } = useCurrentUser();
   return (
     <NavigationMenu>
       <NavigationMenuList>
@@ -58,6 +61,18 @@ export function NavMenu() {
           <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
             <Link href="/dashboard">Dashboard</Link>
           </NavigationMenuLink>
+        </NavigationMenuItem>
+        <NavigationMenuItem>
+          {user ? (
+            <LogoutButton />
+          ) : (
+            <NavigationMenuLink
+              asChild
+              className={navigationMenuTriggerStyle()}
+            >
+              <Link href="/auth/signup">Signup</Link>
+            </NavigationMenuLink>
+          )}
         </NavigationMenuItem>
       </NavigationMenuList>
     </NavigationMenu>

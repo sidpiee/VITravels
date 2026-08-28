@@ -30,13 +30,16 @@ export default function AllRidesList() {
       className={cn(
         "relative z-10 w-full",
         isEmptyState
-          ? "flex min-h-110 flex-col items-center justify-center gap-5 pb-10"
+          ? "flex min-h-screen flex-col items-center justify-center gap-5 pb-10"
           : "mt-20 flex flex-col items-start gap-6 px-6 pb-10 pt-8",
       )}
     >
       {isEmptyState ? (
         <h1 className="font-heading2 text-3xl font-semibold">
-          No rides available right now
+          No rides available{"  "}
+          <span className="bg-linear-to-b from-purple-300 to-purple-700 bg-clip-text text-transparent">
+            right now!
+          </span>
         </h1>
       ) : (
         <>
