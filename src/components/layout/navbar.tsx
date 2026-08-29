@@ -1,5 +1,4 @@
 "use client";
-import * as React from "react";
 import Link from "next/link";
 import { useTheme } from "next-themes";
 
@@ -13,15 +12,18 @@ import {
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
 import { Button } from "../ui/button";
+import { Dialog, DialogTrigger } from "../ui/dialog";
+import EditNameDialog from "../ui/editNameDialog";
 import { Moon, Sun } from "lucide-react";
 import { LogoutButton } from "../ui/logoutButton";
 import { useCurrentUser } from "@/hooks/use-current-user";
 
 export function NavMenu() {
-  const { theme, setTheme } = useTheme();
+  const { setTheme } = useTheme();
   const { data: user } = useCurrentUser();
+
   return (
-    <NavigationMenu>
+    <NavigationMenu viewport={false}>
       <NavigationMenuList>
         <NavigationMenuItem>
           <NavigationMenuTrigger>Theme</NavigationMenuTrigger>
@@ -47,6 +49,11 @@ export function NavMenu() {
             <Link href="/">Home</Link>
           </NavigationMenuLink>
         </NavigationMenuItem>
+        <NavigationMenuItem>
+          <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
+            <Link href="/dashboard">Dashboard</Link>
+          </NavigationMenuLink>
+        </NavigationMenuItem>
         <NavigationMenuItem className="">
           <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
             <Link href="/rides">My rides</Link>
@@ -58,13 +65,24 @@ export function NavMenu() {
           </NavigationMenuLink>
         </NavigationMenuItem>
         <NavigationMenuItem>
-          <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
-            <Link href="/dashboard">Dashboard</Link>
-          </NavigationMenuLink>
-        </NavigationMenuItem>
-        <NavigationMenuItem>
           {user ? (
-            <LogoutButton />
+            <>
+              <NavigationMenuTrigger>My profile</NavigationMenuTrigger>
+              <NavigationMenuContent>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      className="mb-2 w-full cursor-pointer"
+                    >
+                      Edit name
+                    </Button>
+                  </DialogTrigger>
+                  <EditNameDialog currentName={user.user.name} />
+                </Dialog>
+                <LogoutButton />
+              </NavigationMenuContent>
+            </>
           ) : (
             <NavigationMenuLink
               asChild
