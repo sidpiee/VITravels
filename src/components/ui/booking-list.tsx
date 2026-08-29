@@ -27,7 +27,11 @@ export default function BookingList() {
     },
   });
   const bookings = bookingListQuery.data?.bookings ?? [];
-  const isEmptyState = bookingListQuery.isSuccess && bookings.length === 0;
+  const activeBookings = bookings.filter(
+    (booking) => booking.status === "confirmed",
+  );
+  const isEmptyState =
+    bookingListQuery.isSuccess && activeBookings.length === 0;
 
   return (
     <div
@@ -54,8 +58,13 @@ export default function BookingList() {
           </div>
 
           <div className="grid w-full grid-cols-3 gap-3">
-            {bookings.map((booking) => (
-              <RideCard key={booking._id} variant="booked" {...booking.ride} />
+            {activeBookings.map((booking) => (
+              <RideCard
+                key={booking._id}
+                variant="booked"
+                {...booking.ride}
+                bookingId={booking._id}
+              />
             ))}
           </div>
         </>

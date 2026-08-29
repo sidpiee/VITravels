@@ -31,6 +31,7 @@ import { ShimmerButton } from "./shimmer-button";
 
 type RideCardProps = ride & {
   variant?: "owned" | "available" | "booked";
+  bookingId?: string;
 };
 
 export default function RidesList() {
@@ -134,7 +135,11 @@ function formatRideDate(value: string) {
   }).format(date);
 }
 
-export function RideCard({ variant = "owned", ...rideData }: RideCardProps) {
+export function RideCard({
+  variant = "owned",
+  bookingId,
+  ...rideData
+}: RideCardProps) {
   const {
     from,
     destination,
@@ -211,6 +216,30 @@ export function RideCard({ variant = "owned", ...rideData }: RideCardProps) {
         queryKey: ["my-rides"],
       });
       toast.success("Ride cancelled!");
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
+  const cancelBookingMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_API}/api/bookings/${id}/cancel`,
+        {
+          method: "PATCH",
+          credentials: "include",
+        },
+      );
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message);
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["my-bookings"] });
+      queryClient.invalidateQueries({ queryKey: ["all-rides"] });
+      toast.success("Booking cancelled!");
     },
     onError: (error) => {
       toast.error(error.message);
@@ -392,6 +421,13 @@ export function RideCard({ variant = "owned", ...rideData }: RideCardProps) {
               type="button"
               variant="destructive"
               className="cursor-pointer"
+              data-booking-id={bookingId}
+              onClick={() => {
+                if (bookingId) {
+                  cancelBookingMutation.mutate(bookingId);
+                }
+              }}
+              disabled={!bookingId || cancelBookingMutation.isPending}
             >
               Cancel booking
             </Button>
