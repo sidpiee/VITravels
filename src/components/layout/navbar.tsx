@@ -22,29 +22,36 @@ export function NavMenu() {
   const { setTheme } = useTheme();
   const { data: user } = useCurrentUser();
   const pathname = usePathname();
+  const isAuthPage = pathname === "/auth/login" || pathname === "/auth/signup";
   return (
     <Dialog>
-      <NavigationMenu viewport={false}>
+      <NavigationMenu
+        viewport={false}
+        className={isAuthPage ? "dark text-foreground" : undefined}
+        style={isAuthPage ? { colorScheme: "dark" } : undefined}
+      >
         <NavigationMenuList>
-          <NavigationMenuItem>
-            <NavigationMenuTrigger>Theme</NavigationMenuTrigger>
-            <NavigationMenuContent>
-              <Button
-                className="border border-border mb-2 cursor-pointer"
-                variant={"ghost"}
-                onClick={() => setTheme("light")}
-              >
-                Light <Sun />
-              </Button>
-              <Button
-                variant={"ghost"}
-                className="border border-border cursor-pointer"
-                onClick={() => setTheme("dark")}
-              >
-                Dark <Moon />
-              </Button>
-            </NavigationMenuContent>
-          </NavigationMenuItem>
+          {!isAuthPage && (
+            <NavigationMenuItem>
+              <NavigationMenuTrigger>Theme</NavigationMenuTrigger>
+              <NavigationMenuContent>
+                <Button
+                  className="border border-border mb-2 cursor-pointer"
+                  variant={"ghost"}
+                  onClick={() => setTheme("light")}
+                >
+                  Light <Sun />
+                </Button>
+                <Button
+                  variant={"ghost"}
+                  className="border border-border cursor-pointer"
+                  onClick={() => setTheme("dark")}
+                >
+                  Dark <Moon />
+                </Button>
+              </NavigationMenuContent>
+            </NavigationMenuItem>
+          )}
           <NavigationMenuItem className="">
             <NavigationMenuLink
               asChild
