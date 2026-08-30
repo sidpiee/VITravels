@@ -1,8 +1,8 @@
 "use client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Button } from "./button";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { Button } from "./button";
 
 export function LogoutButton() {
   const queryClient = useQueryClient();
@@ -24,6 +24,8 @@ export function LogoutButton() {
     },
     onSuccess: () => {
       toast.success("Logout successful");
+
+      queryClient.setQueryData(["current-user"], null);
       queryClient.clear();
       router.replace("/auth/login");
     },
@@ -33,15 +35,13 @@ export function LogoutButton() {
   });
 
   return (
-    <>
-      <Button
-        variant="ghost"
-        onClick={() => logoutMutation.mutate()}
-        className="cursor-pointer text-destructive hover:bg-destructive/10 hover:text-destructive"
-        disabled={logoutMutation.isPending}
-      >
-        Logout
-      </Button>
-    </>
+    <Button
+      variant="ghost"
+      onClick={() => logoutMutation.mutate()}
+      className="cursor-pointer text-destructive hover:bg-destructive/10 hover:text-destructive"
+      disabled={logoutMutation.isPending}
+    >
+      Logout
+    </Button>
   );
 }

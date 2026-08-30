@@ -14,7 +14,7 @@ type CurrentUserResponse = {
 };
 
 export function useCurrentUser() {
-  return useQuery<CurrentUserResponse>({
+  return useQuery<CurrentUserResponse | null>({
     queryKey: ["current-user"],
     queryFn: async () => {
       const response = await fetch(
@@ -23,6 +23,10 @@ export function useCurrentUser() {
           credentials: "include",
         },
       );
+
+      if (response.status === 401) {
+        return null;
+      }
 
       if (!response.ok) {
         throw new Error("Unable to fetch current user");

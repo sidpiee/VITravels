@@ -1,7 +1,8 @@
 "use client";
+import { Moon, Sun } from "lucide-react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
-
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -11,17 +12,16 @@ import {
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
+import { useCurrentUser } from "@/hooks/use-current-user";
 import { Button } from "../ui/button";
 import { Dialog, DialogTrigger } from "../ui/dialog";
 import EditNameDialog from "../ui/editNameDialog";
-import { Moon, Sun } from "lucide-react";
 import { LogoutButton } from "../ui/logoutButton";
-import { useCurrentUser } from "@/hooks/use-current-user";
 
 export function NavMenu() {
   const { setTheme } = useTheme();
   const { data: user } = useCurrentUser();
-
+  const pathname = usePathname();
   return (
     <Dialog>
       <NavigationMenu viewport={false}>
@@ -46,22 +46,34 @@ export function NavMenu() {
             </NavigationMenuContent>
           </NavigationMenuItem>
           <NavigationMenuItem className="">
-            <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
+            <NavigationMenuLink
+              asChild
+              className={navigationMenuTriggerStyle()}
+            >
               <Link href="/">Home</Link>
             </NavigationMenuLink>
           </NavigationMenuItem>
           <NavigationMenuItem>
-            <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
+            <NavigationMenuLink
+              asChild
+              className={navigationMenuTriggerStyle()}
+            >
               <Link href="/dashboard">Dashboard</Link>
             </NavigationMenuLink>
           </NavigationMenuItem>
           <NavigationMenuItem className="">
-            <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
+            <NavigationMenuLink
+              asChild
+              className={navigationMenuTriggerStyle()}
+            >
               <Link href="/rides">My rides</Link>
             </NavigationMenuLink>
           </NavigationMenuItem>
           <NavigationMenuItem>
-            <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
+            <NavigationMenuLink
+              asChild
+              className={navigationMenuTriggerStyle()}
+            >
               <Link href="/bookings">My bookings</Link>
             </NavigationMenuLink>
           </NavigationMenuItem>
@@ -86,7 +98,11 @@ export function NavMenu() {
                 asChild
                 className={navigationMenuTriggerStyle()}
               >
-                <Link href="/auth/signup">Signup</Link>
+                {pathname === "/auth/signup" ? (
+                  <Link href="/auth/login">Login</Link>
+                ) : (
+                  <Link href="/auth/signup">Signup</Link>
+                )}
               </NavigationMenuLink>
             )}
           </NavigationMenuItem>
