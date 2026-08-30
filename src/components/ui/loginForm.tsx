@@ -24,7 +24,7 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 
 const formSchema = z.object({
@@ -42,6 +42,7 @@ const formSchema = z.object({
 
 export function LoginForm() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -74,7 +75,10 @@ export function LoginForm() {
       }
       return res.json();
     },
-    onSuccess: () => {
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: ["current-user"],
+      });
       router.replace("/dashboard");
     },
     onError: (err) => {
