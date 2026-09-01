@@ -32,12 +32,60 @@ import { cn } from "@/lib/utils";
 import type { ride } from "@/types/ride";
 import { RideCard } from "./rides-list";
 
+type RideFilters = {
+  from: string;
+  destination: string;
+  date?: Date;
+  availableSeats: string;
+  minPrice: string;
+  maxPrice: string;
+};
+
+const emptyFilters: RideFilters = {
+  from: "",
+  destination: "",
+  date: undefined,
+  availableSeats: "",
+  minPrice: "",
+  maxPrice: "",
+};
+
 export default function AllRidesList() {
+  const [appliedFilters, setAppliedFilters] =
+    useState<RideFilters>(emptyFilters);
+
   const allRidesQuery = useQuery({
-    queryKey: ["all-rides"],
+    queryKey: ["all-rides", appliedFilters],
     queryFn: async () => {
+      const params = new URLSearchParams();
+
+      if (appliedFilters.from) {
+        params.set("from", appliedFilters.from);
+      }
+
+      if (appliedFilters.destination) {
+        params.set("destination", appliedFilters.destination);
+      }
+
+      if (appliedFilters.date) {
+        params.set("date", format(appliedFilters.date, "yyyy-MM-dd"));
+      }
+
+      if (appliedFilters.availableSeats) {
+        params.set("availableSeats", appliedFilters.availableSeats);
+      }
+
+      if (appliedFilters.minPrice) {
+        params.set("minPrice", appliedFilters.minPrice);
+      }
+
+      if (appliedFilters.maxPrice) {
+        params.set("maxPrice", appliedFilters.maxPrice);
+      }
+
+      const queryString = params.toString();
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_API}/api/rides`,
+        `${process.env.NEXT_PUBLIC_BACKEND_API}/api/rides${queryString ? `?${queryString}` : ""}`,
         {
           credentials: "include",
         },
@@ -57,17 +105,20 @@ export default function AllRidesList() {
       className={cn(
         "relative z-10 w-full",
         isEmptyState
-          ? "flex min-h-screen flex-col items-center justify-center gap-5 pb-10"
+          ? "flex min-h-screen flex-col items-center justify-center gap-5 pb-10 px-6"
           : "mt-20 flex flex-col items-start gap-6 px-6 pb-10 pt-8",
       )}
     >
       {isEmptyState ? (
-        <h1 className="font-heading2 text-3xl font-semibold">
-          No rides available{"  "}
-          <span className="bg-linear-to-b from-purple-300 to-purple-700 bg-clip-text text-transparent">
-            right now!
-          </span>
-        </h1>
+        <>
+          <FilterBox onApply={setAppliedFilters} />
+          <h1 className="font-heading2 text-3xl font-semibold">
+            No rides available{"  "}
+            <span className="bg-linear-to-b from-purple-300 to-purple-700 bg-clip-text text-transparent">
+              right now!
+            </span>
+          </h1>
+        </>
       ) : (
         <>
           <div className="flex w-full items-center justify-between pr-10">
@@ -75,7 +126,7 @@ export default function AllRidesList() {
               Available rides
             </p>
           </div>
-          <FilterBox />
+          <FilterBox onApply={setAppliedFilters} />
           <div className="grid w-full grid-cols-3 gap-3">
             {rides.map((thisRide) => (
               <RideCard variant="available" {...thisRide} key={thisRide._id} />
@@ -87,16 +138,34 @@ export default function AllRidesList() {
   );
 }
 
-function FilterBox() {
+type FilterBoxProps = {
+  onApply: (filters: RideFilters) => void;
+};
+
+function FilterBox({ onApply }: FilterBoxProps) {
   const locations = [
-    "Bhopal",
-    "Sehore",
     "VIT",
+    "Bhopal",
     "Bhopal Junction",
+    "Bhopal Airport",
+    "Sehore",
     "rkmp",
-    "vit",
+    "Astha",
+    "Nadra",
+    "Lal Ghati",
+    "Indore",
   ];
-  const [selectedDate, setSelectedDate] = useState<Date>();
+  const [draftFilters, setDraftFilters] = useState<RideFilters>(emptyFilters);
+
+  function updateDraft<K extends keyof RideFilters>(
+    key: K,
+    value: RideFilters[K],
+  ) {
+    setDraftFilters((current) => ({
+      ...current,
+      [key]: value,
+    }));
+  }
 
   return (
     <section className="w-full rounded-md border border-purple-300/70 bg-card/60 p-4 shadow-xl shadow-purple-500/10 backdrop-blur-xl dark:border-purple-800/70">
@@ -122,6 +191,8 @@ function FilterBox() {
           placeholder="Choose origin"
           icon={MapPin}
           items={locations}
+          value={draftFilters.from}
+          onChange={(value) => updateDraft("from", value)}
         />
 
         <LocationCombobox
@@ -129,6 +200,8 @@ function FilterBox() {
           placeholder="Choose destination"
           icon={MapPin}
           items={locations}
+          value={draftFilters.destination}
+          onChange={(value) => updateDraft("destination", value)}
         />
 
         <FilterField label="Date" icon={CalendarDays}>
@@ -140,8 +213,8 @@ function FilterBox() {
                 aria-label="Ride date"
                 className="h-7 w-full justify-start rounded-none border-0 bg-transparent px-0 text-left text-sm font-normal shadow-none hover:bg-transparent focus-visible:ring-0 sm:w-auto"
               >
-                {selectedDate ? (
-                  format(selectedDate, "dd MMM yyyy")
+                {draftFilters.date ? (
+                  format(draftFilters.date, "dd MMM yyyy")
                 ) : (
                   <span className="text-muted-foreground">Select date</span>
                 )}
@@ -150,8 +223,8 @@ function FilterBox() {
             <PopoverContent className="w-auto p-0" align="start">
               <Calendar
                 mode="single"
-                selected={selectedDate}
-                onSelect={setSelectedDate}
+                selected={draftFilters.date}
+                onSelect={(date) => updateDraft("date", date)}
                 autoFocus
               />
             </PopoverContent>
@@ -165,6 +238,10 @@ function FilterBox() {
             max="8"
             placeholder="Any"
             aria-label="Available seats"
+            value={draftFilters.availableSeats}
+            onChange={(event) =>
+              updateDraft("availableSeats", event.target.value)
+            }
             className="h-7 rounded-none border-0 bg-transparent px-0 py-0 shadow-none focus-visible:ring-0 sm:w-12"
           />
         </FilterField>
@@ -176,6 +253,8 @@ function FilterBox() {
               min="0"
               placeholder="Min"
               aria-label="Minimum price"
+              value={draftFilters.minPrice}
+              onChange={(event) => updateDraft("minPrice", event.target.value)}
               className="h-7 w-full rounded-xl border-border/70 bg-background/70 px-2 shadow-none focus-visible:ring-0 sm:w-16"
             />
             <span className="text-muted-foreground">–</span>
@@ -184,12 +263,18 @@ function FilterBox() {
               min="0"
               placeholder="Max"
               aria-label="Maximum price"
+              value={draftFilters.maxPrice}
+              onChange={(event) => updateDraft("maxPrice", event.target.value)}
               className="h-7 w-full rounded-xl border-border/70 bg-background/70 px-2 shadow-none focus-visible:ring-0 sm:w-16"
             />
           </div>
         </FilterField>
 
-        <Button type="button" disabled className="h-9 min-h-0 rounded-xl px-4">
+        <Button
+          type="button"
+          onClick={() => onApply(draftFilters)}
+          className="h-9 min-h-0 rounded-xl px-4"
+        >
           Apply filters
         </Button>
       </div>
@@ -202,6 +287,8 @@ type LocationComboboxProps = {
   placeholder: string;
   icon: LucideIcon;
   items: string[];
+  value: string;
+  onChange: (value: string) => void;
 };
 
 function LocationCombobox({
@@ -209,10 +296,16 @@ function LocationCombobox({
   placeholder,
   icon: Icon,
   items,
+  value,
+  onChange,
 }: LocationComboboxProps) {
   return (
     <FilterField label={label} icon={Icon} className="focus-within:ring-0">
-      <Combobox items={items}>
+      <Combobox
+        items={items}
+        value={value || null}
+        onValueChange={(nextValue) => onChange(nextValue ?? "")}
+      >
         <ComboboxInput
           placeholder={placeholder}
           aria-label={label}
