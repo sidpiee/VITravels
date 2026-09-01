@@ -1,36 +1,63 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Vitravels
 
-## Getting Started
+Vitravels is a ride-sharing platform that helps users find, create, and manage shared journeys.
 
-First, run the development server:
+## What the site does
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+Users can sign up, log in, and browse active rides created by other users. Each ride shows the complete journey details, including:
+
+- Starting point and destination
+- Travel date and departure time
+- Price per seat
+- Available seats and total capacity
+- Ride creator
+- Ride status
+
+Users can book an available seat on a ride and cancel their booking later. Ride creators can edit their ride details or cancel a ride when needed.
+
+## Main areas
+
+### Dashboard
+
+The dashboard displays all currently available rides. Users can search for rides by:
+
+- Starting location
+- Destination
+- Travel date
+- Minimum available seats
+- Minimum and maximum price
+
+Filters are edited locally first and are applied only when the user clicks **Apply filters**. This keeps the page from sending a new request for every keystroke.
+
+### My rides
+
+The My Rides section contains rides created by the current user. From here, users can review, edit, or cancel their active rides.
+
+### My bookings
+
+The My Bookings section shows the rides booked by the current user. Confirmed bookings can be cancelled from this section.
+
+## Ride experience
+
+Rides are presented as detailed cards so users can quickly compare routes, timing, cost, remaining capacity, and creator information. The interface also indicates whether the current user has already booked a ride and prevents duplicate bookings.
+
+Only active rides with available seats and a future departure time are shown as bookable rides.
+
+## Filtering behavior
+
+The dashboard sends the selected filters to the rides API only after they are applied. The available filters correspond to the ride search API:
+
+```text
+from
+destination
+date
+availableSeats
+minPrice
+maxPrice
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Location fields use searchable comboboxes, the date field uses a calendar popover, and numeric filters use compact input controls.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Built with
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Vitravels uses Next.js, React, TypeScript, TanStack Query, Tailwind CSS, shadcn-style UI components, and Lucide icons.
