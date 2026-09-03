@@ -12,6 +12,7 @@ import { NavMenu } from "@/components/layout/navbar";
 import { Toaster } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
 import QueryProvider from "@/services/QueryProvider";
+import { Analytics } from "@vercel/analytics/next";
 
 const special = Special_Gothic_Expanded_One({
   subsets: ["latin"],
@@ -67,6 +68,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <Toaster />
           </ThemeProvider>
         </QueryProvider>
+        <Analytics />
       </body>
     </html>
   );
