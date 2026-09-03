@@ -93,7 +93,7 @@ export function LoginForm() {
   }
 
   return (
-    <Card className="relative w-full sm:max-w-md bg-transparent overflow-hidden ring-0">
+    <Card className="relative mx-auto w-full max-w-md overflow-hidden bg-transparent ring-0">
       <ShineBorder shineColor={["#00E5FF", "#008CFF", "#4F46E5", "#8B5CF6"]} />
       <CardHeader>
         <CardTitle>Login Form</CardTitle>
@@ -151,13 +151,16 @@ export function LoginForm() {
         </form>
       </CardContent>
       <CardFooter>
-        <Field orientation="horizontal">
+        <Field
+          orientation="horizontal"
+          className="flex-col items-stretch gap-3 sm:flex-row sm:items-center"
+        >
           <Button
             type="button"
             variant="outline"
             onClick={() => form.reset()}
             disabled={loginUserMutation.isPending}
-            className="cursor-pointer"
+            className="w-full cursor-pointer sm:w-auto"
           >
             Reset
           </Button>
@@ -165,11 +168,11 @@ export function LoginForm() {
             type="submit"
             form="login-form"
             disabled={loginUserMutation.isPending}
-            className="cursor-pointer"
+            className="w-full cursor-pointer sm:w-auto"
           >
             Submit
           </Button>
-          <FieldDescription>
+          <FieldDescription className="text-center sm:ml-auto sm:text-left">
             New here ? <Link href="/auth/signup">Signup</Link>
           </FieldDescription>
         </Field>

@@ -12,8 +12,8 @@ export default function AuthLayout({
       style={{ colorScheme: "dark" }}
     >
       <RouteGuard mode="guest">
-        <div className="flex relative">
-          <div className="flex-1 justify-center items-center  flex z-30">
+        <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-4 py-8 lg:flex-row lg:justify-start lg:px-0 lg:py-0">
+          <div className="relative z-30 flex w-full max-w-md justify-center lg:max-w-none lg:flex-1">
             {children}
           </div>
 
@@ -22,9 +22,9 @@ export default function AuthLayout({
             alt="bg-image"
             width={1122}
             height={1402}
-            className="w-200 h-screen flex-1 z-10"
+            className="z-10 hidden h-screen w-1/2 object-cover lg:block lg:flex-none"
           />
-          <div className=" absolute inset-0 bg-linear-to-l from-transparent via-background to-transparent z-20" />
+          <div className="absolute inset-0 z-20 hidden bg-linear-to-l from-transparent via-background to-transparent lg:block" />
         </div>
       </RouteGuard>
     </div>

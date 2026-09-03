@@ -182,7 +182,7 @@ export function SignupForm() {
   }
 
   return (
-    <Card className="relative w-full sm:max-w-md bg-transparent overflow-hidden ring-0">
+    <Card className="relative mx-auto w-full max-w-md overflow-hidden bg-transparent ring-0">
       <ShineBorder shineColor={["#00E5FF", "#008CFF", "#4F46E5", "#8B5CF6"]} />
       <CardHeader>
         <CardTitle>Signup Form</CardTitle>
@@ -281,11 +281,14 @@ export function SignupForm() {
         </form>
       </CardContent>
       <CardFooter>
-        <Field orientation="horizontal">
+        <Field
+          orientation="horizontal"
+          className="flex-col items-stretch gap-3 sm:flex-row sm:items-center"
+        >
           {sentOTP ? (
             <form
               onSubmit={handleVerifyOtp}
-              className="flex flex-col items-center gap-3"
+              className="flex w-full flex-col items-center gap-3"
             >
               <InputOTP
                 maxLength={6}
@@ -302,9 +305,9 @@ export function SignupForm() {
                   <InputOTPSlot index={5} />
                 </InputOTPGroup>
               </InputOTP>
-              <div className="flex gap-5">
+              <div className="flex w-full flex-wrap justify-center gap-3">
                 <Button
-                  className="cursor-pointer"
+                  className="w-full cursor-pointer sm:w-auto"
                   type="button"
                   variant="outline"
                   onClick={handleChangeEmail}
@@ -313,7 +316,7 @@ export function SignupForm() {
                   Change email
                 </Button>
                 <Button
-                  className="cursor-pointer"
+                  className="w-full cursor-pointer sm:w-auto"
                   type="submit"
                   disabled={verifyOTPMutation.isPending}
                 >
@@ -324,7 +327,7 @@ export function SignupForm() {
           ) : (
             <>
               <Button
-                className="cursor-pointer"
+                className="w-full cursor-pointer sm:w-auto"
                 type="button"
                 variant="outline"
                 onClick={() => form.reset()}
@@ -333,14 +336,14 @@ export function SignupForm() {
                 Reset
               </Button>
               <Button
-                className="cursor-pointer"
+                className="w-full cursor-pointer sm:w-auto"
                 type="submit"
                 form="signup-form"
                 disabled={sendOTPMutation.isPending}
               >
                 {sendOTPMutation.isPending ? <Spinner /> : "Send OTP"}
               </Button>
-              <FieldDescription>
+              <FieldDescription className="text-center sm:ml-auto sm:text-left">
                 Already a user ? <Link href="/auth/login">Login</Link>
               </FieldDescription>
             </>
