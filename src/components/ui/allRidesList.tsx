@@ -121,13 +121,13 @@ export default function AllRidesList() {
         </>
       ) : (
         <>
-          <div className="flex w-full items-center justify-between pr-10">
-            <p className="bg-linear-to-r from-purple-500 to-purple-700 bg-clip-text font-heading2 text-5xl font-bold text-transparent dark:to-purple-300">
+          <div className="flex w-full items-center justify-between pr-0 sm:pr-10">
+            <p className="bg-linear-to-r from-purple-500 to-purple-700 bg-clip-text font-heading2 text-3xl font-bold text-transparent sm:text-5xl dark:to-purple-300">
               Available rides
             </p>
           </div>
           <FilterBox onApply={setAppliedFilters} />
-          <div className="grid w-full grid-cols-3 gap-3">
+          <div className="grid w-full grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
             {rides.map((thisRide) => (
               <RideCard variant="available" {...thisRide} key={thisRide._id} />
             ))}

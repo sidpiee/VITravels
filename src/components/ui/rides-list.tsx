@@ -62,7 +62,7 @@ export default function RidesList() {
       className={cn(
         "relative z-10 w-full",
         isEmptyState
-          ? "flex min-h-screen flex-col items-center justify-center gap-5 pb-10"
+          ? "flex min-h-screen flex-col items-center justify-center gap-5 px-6 pb-10"
           : "flex flex-col items-start gap-6 px-6 pb-10 pt-8 mt-20",
       )}
     >
@@ -78,14 +78,14 @@ export default function RidesList() {
         </>
       ) : (
         <>
-          <div className="flex w-full items-center justify-between pr-10">
-            <p className="bg-linear-to-r from-purple-500 to-purple-700 bg-clip-text font-heading2 text-5xl font-bold text-transparent dark:to-purple-300">
+          <div className="flex w-full items-center justify-between pr-0 sm:pr-10">
+            <p className="bg-linear-to-r from-purple-500 to-purple-700 bg-clip-text font-heading2 text-3xl font-bold text-transparent sm:text-5xl dark:to-purple-300">
               My rides
             </p>
             <CreateRideDialog />
           </div>
 
-          <div className="grid w-full grid-cols-3 gap-3">
+          <div className="grid w-full grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
             {rides.map((thisRide) => (
               <RideCard key={thisRide._id} {...thisRide} />
             ))}
