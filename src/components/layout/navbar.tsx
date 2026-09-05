@@ -1,5 +1,6 @@
 "use client";
 import { Menu, Moon, Sun, X } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
@@ -36,7 +37,20 @@ export function NavMenu() {
 
   return (
     <Dialog>
-      <div className="relative">
+      <div className="relative flex w-full items-center justify-between">
+        <Link
+          href="/"
+          aria-label="Vitravels home"
+          className="flex shrink-0 items-center"
+        >
+          <Image
+            src="/branding/vitravels-mark.png"
+            alt="Vitravels"
+            width={48}
+            height={36}
+            className="h-11 w-auto -translate-y-px object-contain"
+          />
+        </Link>
         <div className="hidden md:block">
           <NavigationMenu
             viewport={false}

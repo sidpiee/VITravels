@@ -60,7 +60,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className={`min-h-full flex flex-col ${special.variable}`}>
         <QueryProvider>
           <ThemeProvider attribute="class">
-            <div className="fixed top-0 right-0 left-0 z-50 flex justify-end p-3 md:left-auto md:p-4">
+            <div className="fixed inset-x-0 top-0 z-50 p-3 md:p-4">
               <NavMenu />
             </div>
             {children}
