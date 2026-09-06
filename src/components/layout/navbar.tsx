@@ -37,7 +37,9 @@ export function NavMenu() {
 
   return (
     <Dialog>
-      <div className="relative flex w-full items-center justify-between">
+      <div
+        className={`relative flex w-full items-center justify-between rounded-3xl border-b border-border/50 bg-background/10 px-2 py-1  backdrop-blur-xs ${isAuthPage ? "dark text-foreground" : ""}`}
+      >
         <Link
           href="/"
           aria-label="Vitravels home"
