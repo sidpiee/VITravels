@@ -149,11 +149,13 @@ function FilterBox({ onApply }: FilterBoxProps) {
     "Bhopal Junction",
     "Bhopal Airport",
     "Sehore",
-    "rkmp",
+    "Rkmp",
     "Astha",
     "Nadra",
     "Lal Ghati",
     "Indore",
+    "Indore Airport",
+    "Sant Hirdaram",
   ];
   const [draftFilters, setDraftFilters] = useState<RideFilters>(emptyFilters);
 

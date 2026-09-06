@@ -10,12 +10,21 @@ import {
   MapPinHouse,
   UserRound,
 } from "lucide-react";
+import { useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import {
+  Combobox,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+} from "@/components/ui/combobox";
 import {
   Field,
   FieldError,
@@ -33,19 +42,37 @@ import type { ride } from "@/types/ride";
 import { Calendar } from "./calendar";
 
 const timePattern = /^([01]\d|2[0-3]):([0-5]\d)$/;
+const locations = [
+  "VIT",
+  "Bhopal",
+  "Bhopal Junction",
+  "Bhopal Airport",
+  "Sehore",
+  "Rkmp",
+  "Astha",
+  "Nadra",
+  "Lal Ghati",
+  "Indore",
+  "Indore Airport",
+  "Sant Hirdaram",
+] as const;
+type Location = (typeof locations)[number];
+
+const locationField = (message: string) =>
+  z
+    .string()
+    .trim()
+    .min(2, message)
+    .max(100, message)
+    .refine(
+      (value) => locations.includes(value as Location),
+      "Select a location from the list.",
+    );
 
 const formSchema = z
   .object({
-    from: z
-      .string()
-      .trim()
-      .min(2, "Starting location must be at least 2 characters.")
-      .max(100, "Starting location must be at most 100 characters."),
-    to: z
-      .string()
-      .trim()
-      .min(2, "Destination must be at least 2 characters.")
-      .max(100, "Destination must be at most 100 characters."),
+    from: locationField("Select a starting location from the list."),
+    to: locationField("Select a destination from the list."),
     availableSeats: z
       .number({ error: "Enter the number of available seats." })
       .min(1, "At least 1 seat is required.")
@@ -104,6 +131,9 @@ export function CreateRideForm({ ride, onSuccess }: CreateRideFormProps) {
     rideTime: ride?.time ?? "",
     price: ride?.price,
   };
+  const [fromInputValue, setFromInputValue] = useState(initialValues.from);
+  const [toInputValue, setToInputValue] = useState(initialValues.to);
+  const comboboxContainerRef = useRef<HTMLFormElement>(null);
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: initialValues,
@@ -200,6 +230,7 @@ export function CreateRideForm({ ride, onSuccess }: CreateRideFormProps) {
       <CardContent className="p-0">
         <form
           id="create-ride-form"
+          ref={comboboxContainerRef}
           onSubmit={form.handleSubmit(onSubmit)}
           className="w-full"
         >
@@ -221,13 +252,47 @@ export function CreateRideForm({ ride, onSuccess }: CreateRideFormProps) {
                       >
                         From
                       </FieldLabel>
-                      <Input
-                        {...field}
-                        id="create-ride-from"
-                        aria-invalid={fieldState.invalid}
-                        placeholder="Starting location"
-                        autoComplete="off"
-                      />
+                      <Combobox
+                        items={locations}
+                        value={field.value || null}
+                        inputValue={fromInputValue}
+                        onInputValueChange={(value, details) => {
+                          setFromInputValue(value);
+                          if (
+                            details.reason === "input-change" &&
+                            value !== field.value
+                          ) {
+                            field.onChange("");
+                          }
+                        }}
+                        onValueChange={(value) => {
+                          const nextValue = value ?? "";
+                          field.onChange(nextValue);
+                          setFromInputValue(nextValue);
+                        }}
+                      >
+                        <ComboboxInput
+                          id="create-ride-from"
+                          showTrigger={false}
+                          aria-invalid={fieldState.invalid}
+                          aria-label="Starting location"
+                          placeholder="Starting location"
+                          autoComplete="off"
+                          name={field.name}
+                          onBlur={field.onBlur}
+                          ref={field.ref}
+                        />
+                        <ComboboxContent container={comboboxContainerRef}>
+                          <ComboboxEmpty>No locations found.</ComboboxEmpty>
+                          <ComboboxList>
+                            {(location) => (
+                              <ComboboxItem key={location} value={location}>
+                                {location}
+                              </ComboboxItem>
+                            )}
+                          </ComboboxList>
+                        </ComboboxContent>
+                      </Combobox>
                       {fieldState.invalid && (
                         <FieldError errors={[fieldState.error]} />
                       )}
@@ -249,13 +314,47 @@ export function CreateRideForm({ ride, onSuccess }: CreateRideFormProps) {
                       >
                         To
                       </FieldLabel>
-                      <Input
-                        {...field}
-                        id="create-ride-to"
-                        aria-invalid={fieldState.invalid}
-                        placeholder="Destination"
-                        autoComplete="off"
-                      />
+                      <Combobox
+                        items={locations}
+                        value={field.value || null}
+                        inputValue={toInputValue}
+                        onInputValueChange={(value, details) => {
+                          setToInputValue(value);
+                          if (
+                            details.reason === "input-change" &&
+                            value !== field.value
+                          ) {
+                            field.onChange("");
+                          }
+                        }}
+                        onValueChange={(value) => {
+                          const nextValue = value ?? "";
+                          field.onChange(nextValue);
+                          setToInputValue(nextValue);
+                        }}
+                      >
+                        <ComboboxInput
+                          id="create-ride-to"
+                          showTrigger={false}
+                          aria-invalid={fieldState.invalid}
+                          aria-label="Destination"
+                          placeholder="Destination"
+                          autoComplete="off"
+                          name={field.name}
+                          onBlur={field.onBlur}
+                          ref={field.ref}
+                        />
+                        <ComboboxContent container={comboboxContainerRef}>
+                          <ComboboxEmpty>No locations found.</ComboboxEmpty>
+                          <ComboboxList>
+                            {(location) => (
+                              <ComboboxItem key={location} value={location}>
+                                {location}
+                              </ComboboxItem>
+                            )}
+                          </ComboboxList>
+                        </ComboboxContent>
+                      </Combobox>
                       {fieldState.invalid && (
                         <FieldError errors={[fieldState.error]} />
                       )}
@@ -427,7 +526,11 @@ export function CreateRideForm({ ride, onSuccess }: CreateRideFormProps) {
         <Button
           type="button"
           variant="outline"
-          onClick={() => form.reset(initialValues)}
+          onClick={() => {
+            form.reset(initialValues);
+            setFromInputValue(initialValues.from);
+            setToInputValue(initialValues.to);
+          }}
         >
           Reset
         </Button>
