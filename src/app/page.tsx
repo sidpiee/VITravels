@@ -22,7 +22,7 @@ export default function Home() {
               </span>
             </span>
             <span className="block text-5xl leading-none bg-linear-to-r from-indigo-500 to-indigo-900 bg-clip-text text-transparent sm:text-7xl">
-              VITravels
+              Vitravels
             </span>
           </h1>
           <div className="flex flex-wrap items-center gap-3">
@@ -31,7 +31,7 @@ export default function Home() {
               variant="outline"
               className="cursor-pointer border-white/70 bg-transparent text-white hover:bg-white/10 hover:text-white"
             >
-              <Link href="/dashboard">Get started</Link>
+              <Link href="/dashboard">Find a ride</Link>
             </Button>
             <Button
               asChild

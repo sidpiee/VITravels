@@ -38,7 +38,7 @@ export function NavMenu() {
   return (
     <Dialog>
       <div
-        className={`relative flex w-full items-center justify-between rounded-3xl border-b border-border/50 bg-background/10 px-2 py-1  backdrop-blur-xs ${isAuthPage ? "dark text-foreground" : ""}`}
+        className={`relative flex w-full items-center justify-between rounded-3xl border-b border-border/50 bg-background/10 px-2 py-1  backdrop-blur-sm ${isAuthPage ? "dark text-foreground" : ""}`}
       >
         <Link
           href="/"
@@ -46,12 +46,15 @@ export function NavMenu() {
           className="flex shrink-0 items-center"
         >
           <Image
-            src="/branding/vitravels-mark.png"
+            src="/branding/vitravels-mark-purple.png"
             alt="Vitravels"
             width={48}
             height={36}
             className="h-11 w-auto -translate-y-px object-contain"
           />
+          <span className="font-ibm text-2xl font-light tracking-tight text-violet-500 sm:text-4xl">
+            itravels
+          </span>
         </Link>
         <div className="hidden md:block">
           <NavigationMenu

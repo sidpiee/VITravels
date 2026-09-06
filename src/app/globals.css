@@ -10,6 +10,7 @@
   --color-hero-foreground: var(--hero-foreground);
   --font-heading: var(--font-special);
   --font-heading2: var(--font-funnel-display);
+  --font-ibm: var(--font-ibm-plex);
   --font-sans: var(--font-sans);
   --font-mono: var(--font-geist-mono);
   --color-sidebar-ring: var(--sidebar-ring);

@@ -3,6 +3,7 @@ import {
   Funnel_Display,
   Geist,
   Geist_Mono,
+  IBM_Plex_Sans_Thai_Looped,
   Inter,
   Special_Gothic_Expanded_One,
 } from "next/font/google";
@@ -21,6 +22,13 @@ const special = Special_Gothic_Expanded_One({
 });
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
+
+const ibmPlex = IBM_Plex_Sans_Thai_Looped({
+  subsets: ["latin", "thai"],
+  weight: ["100", "200", "300", "400", "500", "600", "700"],
+  variable: "--font-ibm-plex",
+  display: "swap",
+});
 
 const funnelDisplay = Funnel_Display({
   subsets: ["latin"],
@@ -54,6 +62,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         geistSans.variable,
         geistMono.variable,
         funnelDisplay.variable,
+        ibmPlex.variable,
         "font-sans",
         inter.variable,
       )}
