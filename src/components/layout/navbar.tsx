@@ -57,7 +57,7 @@ export function NavMenu() {
             className={isAuthPage ? "dark text-foreground" : undefined}
             style={isAuthPage ? { colorScheme: "dark" } : undefined}
           >
-            <NavigationMenuList>
+            <NavigationMenuList className="gap-2">
               {!isAuthPage && (
                 <NavigationMenuItem>
                   <NavigationMenuTrigger>Theme</NavigationMenuTrigger>

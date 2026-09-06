@@ -1,12 +1,14 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Eye, EyeClosed } from "lucide-react";
 import Link from "next/link";
-
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
-import { ShineBorder } from "@/components/ui/shine-border";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -24,8 +26,7 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
+import { ShineBorder } from "@/components/ui/shine-border";
 
 const formSchema = z.object({
   username: z
@@ -43,6 +44,7 @@ const formSchema = z.object({
 export function LoginForm() {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const [showPass, setShowPass] = useState(false);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -132,15 +134,33 @@ export function LoginForm() {
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel htmlFor="login-password">Password</FieldLabel>
-                  <Input
-                    {...field}
-                    id="login-password"
-                    aria-invalid={fieldState.invalid}
-                    placeholder="Your password"
-                    autoComplete="current-password"
-                    type="password"
-                    disabled={loginUserMutation.isPending}
-                  />
+                  <div className="relative">
+                    <Input
+                      {...field}
+                      id="login-password"
+                      aria-invalid={fieldState.invalid}
+                      placeholder="Your password"
+                      autoComplete="current-password"
+                      type={showPass ? "text" : "password"}
+                      disabled={loginUserMutation.isPending}
+                      className="pr-11"
+                    />
+                    <Button
+                      className="absolute top-0 right-0 h-full px-3 hover:bg-transparent cursor-pointer"
+                      onClick={() => setShowPass((visible) => !visible)}
+                      size="icon"
+                      type="button"
+                      variant="ghost"
+                      aria-label={showPass ? "Hide password" : "Show password"}
+                      aria-pressed={showPass}
+                    >
+                      {showPass ? (
+                        <Eye className="h-4 w-4 text-muted-foreground" />
+                      ) : (
+                        <EyeClosed className="h-4 w-4 text-muted-foreground" />
+                      )}
+                    </Button>
+                  </div>
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
                   )}
