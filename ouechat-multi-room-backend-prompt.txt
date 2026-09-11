@@ -1,0 +1,231 @@
+I want to change the OueChat backend to support multiple ride chat rooms over one Socket.IO connection.
+
+Current architecture:
+- OueChat is a standalone TypeScript/Express/Socket.IO/MongoDB service.
+- Ride membership is owned by the Vitravels backend.
+- OueChat validates membership through POST /api/chat/membership/validate.
+- Current chat tokens contain one user ID, one ride ID, and one role.
+- Relevant files include:
+  server/src/sockets/chat.socket.ts
+  server/src/services/rideBackend.service.ts
+  server/src/models/message.model.ts
+  server/src/server.ts
+  server/README.md
+
+Goal:
+A single browser or device should use one Socket.IO connection and join multiple authorized rooms:
+
+  ride:ride1
+  ride:ride2
+  ride:ride3
+
+The frontend should switch between chats without creating a new socket connection for every ride. Different devices should continue to have separate socket connections. If two devices join the same ride room, both must receive messages for that ride.
+
+Please inspect the existing code before editing and implement the following.
+
+1. Change the chat token to be user-scoped
+
+The token must no longer depend on one specific ride or role.
+
+New token claims:
+
+  {
+    "sub": "<userId>",
+    "aud": "ouechat",
+    "scope": "chat",
+    "iat": "<issued timestamp>",
+    "exp": "<expiry timestamp>"
+  }
+
+The token must remain short-lived.
+
+OueChat must:
+- Verify the JWT signature using CHAT_TOKEN_SECRET.
+- Verify the audience is "ouechat".
+- Verify the token is not expired.
+- Require a string user ID in sub.
+- Optionally require scope to equal "chat".
+- Never trust a ride ID or role supplied by the browser.
+
+Update ChatIdentity so it contains the user ID and token expiry information, but not one fixed ride ID.
+
+Do not allow an expired socket to continue performing chat operations. Use Socket.IO packet middleware or disconnect the socket when the token expires.
+
+2. Update the Vitravels session contract
+
+Add or update the trusted Vitravels backend endpoint:
+
+  POST /api/chat/session
+
+It must:
+- Require an authenticated Vitravels user.
+- Issue the user-scoped chat token above.
+- Never expose CHAT_TOKEN_SECRET to the browser.
+- Use the same CHAT_TOKEN_SECRET as OueChat.
+
+If the existing endpoint is already used:
+
+  POST /api/chat/rides/:rideId/session
+
+keep it temporarily for compatibility, but make it issue the new user-scoped token. The ride ID may still be checked when creating the session, but OueChat must not restrict the token to that one ride.
+
+3. Update join_ride
+
+The frontend will emit:
+
+  socket.emit("join_ride", { rideId });
+
+The server must:
+- Validate that rideId is a non-empty string.
+- Call validateMembership(rideId, identity.userId).
+- Reject the request when membership is not allowed.
+- Join the server-derived room ride:<rideId>.
+- Never allow the client to choose an arbitrary room name.
+- Emit an acknowledgement containing rideId and roomId.
+
+Example:
+
+  {
+    "rideId": "<rideId>",
+    "roomId": "ride:<rideId>"
+  }
+
+Remove the current check comparing data.rideId with identity.rideId. The same socket must be able to join ride1 and ride2 if membership validation succeeds for both.
+
+4. Add leave_ride
+
+Add:
+
+  socket.emit("leave_ride", { rideId });
+
+The server must:
+- Validate the ride ID.
+- Leave the derived room ride:<rideId>.
+- Emit an acknowledgement containing rideId.
+
+Leaving does not need membership validation because it only removes access. Socket.IO should automatically remove all room memberships when the socket disconnects.
+
+5. Update get_messages
+
+The frontend will emit:
+
+  socket.emit("get_messages", { rideId });
+
+The server must:
+- Validate the requested ride ID.
+- Validate current membership for that ride.
+- Preferably require that the socket has joined that ride room.
+- Query only messages for the requested ride.
+- Return at most the latest 100 messages.
+- Return them oldest-to-newest for display.
+- Include the ride ID in the response.
+
+Recommended response:
+
+  {
+    "rideId": "<rideId>",
+    "messages": []
+  }
+
+Important: the current query sorts ascending and then limits to 100, which returns the oldest 100 messages when more than 100 exist. Query newest-first, limit to 100, then reverse the result before emitting it.
+
+6. Update send_message
+
+The frontend will emit:
+
+  socket.emit("send_message", {
+    rideId,
+    text
+  });
+
+The server must:
+- Validate the ride ID.
+- Validate and trim the text.
+- Reject empty messages.
+- Enforce the existing 1,000-character limit.
+- Revalidate membership for the requested ride.
+- Confirm the socket has joined ride:<rideId>.
+- Save rideId, senderId from identity.userId, and text.
+- Broadcast only to the requested room.
+- Include rideId in the new_message event.
+
+Example event:
+
+  {
+    "id": "<messageId>",
+    "rideId": "<rideId>",
+    "senderId": "<userId>",
+    "text": "Hello",
+    "createdAt": "<timestamp>"
+  }
+
+A message sent to ride1 must never be delivered to clients who are only in ride2.
+
+7. Keep membership validation server-side
+
+Continue using:
+
+  POST /api/chat/membership/validate
+
+with the header:
+
+  x-chat-service-secret: CHAT_SERVICE_SECRET
+
+and body:
+
+  {
+    "rideId": "<rideId>",
+    "userId": "<userId>"
+  }
+
+OueChat must validate membership before joining a room, loading messages, and sending messages.
+
+Do not expose this internal endpoint or CHAT_SERVICE_SECRET to the frontend.
+
+8. Avoid unnecessary changes
+
+Keep these unchanged unless required:
+- MongoDB message schema.
+- Message persistence model.
+- Room naming format ride:<rideId>.
+- Express health endpoint.
+- Socket.IO startup.
+- Existing chat_error event.
+
+9. Update documentation
+
+Update server/README.md to document:
+- User-scoped token claims.
+- One socket joining multiple ride rooms.
+- join_ride.
+- leave_ride.
+- get_messages.
+- send_message.
+- Updated message response format.
+- Per-ride and per-operation membership validation.
+- Separate sockets for separate devices.
+- Token expiry and renewal behavior.
+
+10. Add or update tests
+
+Test at least:
+- Missing or invalid JWT is rejected.
+- Expired JWT is rejected.
+- A valid user can join ride1.
+- The same socket can join ride2.
+- A non-member cannot join a ride.
+- History can be loaded for each authorized ride.
+- History returns the latest 100 messages in ascending display order.
+- A message sent to ride1 is delivered only to ride1 members.
+- A user cannot send before joining the requested room.
+- leave_ride stops future messages for that room.
+- Two separate sockets in the same ride room both receive new messages.
+- An expired socket cannot continue chat operations.
+
+Implement the changes with minimal refactoring and preserve the existing security model.
+
+At the end, report:
+- Files changed.
+- API and Socket.IO event contract changes.
+- Tests run and their results.
+- Assumptions or remaining integration work required in the Vitravels backend.

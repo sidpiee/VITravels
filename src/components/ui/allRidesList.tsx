@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { format } from "date-fns";
+import { format, startOfDay } from "date-fns";
 import {
   CalendarDays,
   IndianRupee,
@@ -228,6 +228,7 @@ function FilterBox({ onApply }: FilterBoxProps) {
                 selected={draftFilters.date}
                 onSelect={(date) => updateDraft("date", date)}
                 autoFocus
+                disabled={{ before: startOfDay(new Date()) }}
               />
             </PopoverContent>
           </Popover>
