@@ -3,10 +3,15 @@
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 
+import type { Booking } from "@/types/booking";
 import type { ride } from "@/types/ride";
 
 type MyRidesResponse = {
   rides: ride[];
+};
+
+type MyBookingsResponse = {
+  bookings: Booking[];
 };
 
 export default function ChatSidebar() {
@@ -28,9 +33,45 @@ export default function ChatSidebar() {
       return response.json();
     },
   });
+  const bookingsQuery = useQuery<MyBookingsResponse>({
+    queryKey: ["chat-bookings"],
+    queryFn: async () => {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_API}/api/bookings/my-bookings`,
+        {
+          credentials: "include",
+        },
+      );
 
-  const rides = ridesQuery.data?.rides ?? [];
-  const activeRides = rides.filter((rideItem) => rideItem.status === "active");
+      if (!response.ok) {
+        const error = await response.json().catch(() => null);
+        throw new Error(error?.message ?? "Could not fetch bookings");
+      }
+
+      return response.json();
+    },
+  });
+
+  const ownedActiveRides = (ridesQuery.data?.rides ?? []).filter(
+    (rideItem) => rideItem.status === "active",
+  );
+  const bookedActiveRides = (bookingsQuery.data?.bookings ?? [])
+    .filter(
+      (booking) =>
+        booking.status === "confirmed" && booking.ride.status === "active",
+    )
+    .map((booking) => booking.ride);
+  const activeRides = Array.from(
+    new Map(
+      [...ownedActiveRides, ...bookedActiveRides].map((rideItem) => [
+        rideItem._id,
+        rideItem,
+      ]),
+    ).values(),
+  );
+  const isLoading = ridesQuery.isPending || bookingsQuery.isPending;
+  const queryError = ridesQuery.error ?? bookingsQuery.error;
+  const queriesSucceeded = ridesQuery.isSuccess && bookingsQuery.isSuccess;
 
   return (
     <aside className="flex h-fit w-full max-w-xl flex-col gap-3 rounded-3xl border border-border/60 bg-card/80 p-4 shadow-xl shadow-purple-500/5 backdrop-blur-sm sm:p-5">
@@ -38,17 +79,15 @@ export default function ChatSidebar() {
         My Chats
       </p>
 
-      {ridesQuery.isPending && (
+      {isLoading && (
         <p className="px-1 text-sm text-muted-foreground">Loading chats...</p>
       )}
 
-      {ridesQuery.isError && (
-        <p className="px-1 text-sm text-destructive">
-          {ridesQuery.error.message}
-        </p>
+      {queryError && (
+        <p className="px-1 text-sm text-destructive">{queryError.message}</p>
       )}
 
-      {ridesQuery.isSuccess && activeRides.length === 0 && (
+      {queriesSucceeded && activeRides.length === 0 && (
         <p className="px-1 text-sm text-muted-foreground">
           You have no active rides yet.
         </p>
