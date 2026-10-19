@@ -61,3 +61,13 @@ Location fields use searchable comboboxes, the date field uses a calendar popove
 ## Built with
 
 Vitravels uses Next.js, React, TypeScript, TanStack Query, Tailwind CSS, shadcn-style UI components, and Lucide icons.
+
+## Chat configuration
+
+Set `NEXT_PUBLIC_OUECHAT_URL` to the OueChat Socket.IO server URL. For local development, use:
+
+```env
+NEXT_PUBLIC_OUECHAT_URL=http://localhost:4000
+```
+
+The chat page requests a short-lived session from `NEXT_PUBLIC_BACKEND_API/api/chat/session` before connecting.
