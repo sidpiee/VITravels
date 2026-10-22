@@ -1,11 +1,20 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { io, type Socket } from "socket.io-client";
 
-type ConnectionState = "connecting" | "connected" | "disconnected" | "error";
+type ConnectionState =
+  | "connecting"
+  | "joining"
+  | "joined"
+  | "disconnected"
+  | "error";
 
-export default function ChatConnectionStatus() {
+export default function ChatConnectionStatus({ rideId }: { rideId: string }) {
+  const activeRideId = useRef(rideId);
+  activeRideId.current = rideId;
+
+  const socketRef = useRef<Socket | null>(null);
   const [connection, setConnection] = useState<ConnectionState>("connecting");
   const [error, setError] = useState<string | null>(null);
 
@@ -45,9 +54,24 @@ export default function ChatConnectionStatus() {
         });
 
         socket = client;
+        socketRef.current = client;
         client.on("connect", () => {
-          setConnection("connected");
+          setConnection("joining");
           setError(null);
+          client.emit("join_ride", { rideId: activeRideId.current });
+        });
+        client.on(
+          "joined_ride",
+          (event: { rideId: string; roomId: string }) => {
+            if (event.rideId !== activeRideId.current) return;
+
+            setConnection("joined");
+            setError(null);
+          },
+        );
+        client.on("chat_error", (event: { message: string }) => {
+          setConnection("error");
+          setError(event.message);
         });
         client.on("disconnect", () => setConnection("disconnected"));
         client.on("connect_error", (cause: Error) => {
@@ -71,8 +95,20 @@ export default function ChatConnectionStatus() {
     return () => {
       cancelled = true;
       socket?.disconnect();
+      if (socketRef.current === socket) {
+        socketRef.current = null;
+      }
     };
   }, []);
+
+  useEffect(() => {
+    const client = socketRef.current;
+    if (!client?.connected) return;
+
+    setConnection("joining");
+    setError(null);
+    client.emit("join_ride", { rideId });
+  }, [rideId]);
 
   if (error) {
     return (
@@ -84,7 +120,8 @@ export default function ChatConnectionStatus() {
 
   const statusText = {
     connecting: "Connecting to chat…",
-    connected: "Connected to chat.",
+    joining: "Connected. Joining this ride…",
+    joined: "Joined ride chat.",
     disconnected: "Disconnected from chat.",
     error: "Could not connect to chat.",
   }[connection];

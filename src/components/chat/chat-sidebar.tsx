@@ -29,7 +29,7 @@ export default function ChatSidebar() {
         const error = await response.json().catch(() => null);
         throw new Error(error?.message ?? "Could not fetch rides");
       }
-
+      
       return response.json();
     },
   });
