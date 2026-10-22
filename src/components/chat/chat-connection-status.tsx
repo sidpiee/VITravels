@@ -1,7 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { type FormEvent, useEffect, useRef, useState } from "react";
 import { io, type Socket } from "socket.io-client";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useCurrentUser } from "@/hooks/use-current-user";
 
 type ConnectionState =
   | "connecting"
@@ -10,13 +14,24 @@ type ConnectionState =
   | "disconnected"
   | "error";
 
+type ChatMessage = {
+  id: string;
+  rideId: string;
+  senderId: string;
+  text: string;
+  createdAt: string;
+};
+
 export default function ChatConnectionStatus({ rideId }: { rideId: string }) {
   const activeRideId = useRef(rideId);
   activeRideId.current = rideId;
-
+  const user = useCurrentUser();
   const socketRef = useRef<Socket | null>(null);
   const [connection, setConnection] = useState<ConnectionState>("connecting");
   const [error, setError] = useState<string | null>(null);
+  const [draft, setDraft] = useState("");
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const currentUserId = user.data?.user._id;
 
   useEffect(() => {
     let cancelled = false;
@@ -69,8 +84,19 @@ export default function ChatConnectionStatus({ rideId }: { rideId: string }) {
             setError(null);
           },
         );
+        client.on("new_message", (message: ChatMessage) => {
+          if (message.rideId !== activeRideId.current) return;
+
+          setMessages((current) =>
+            current.some((item) => item.id === message.id)
+              ? current
+              : [...current, message],
+          );
+        });
         client.on("chat_error", (event: { message: string }) => {
-          setConnection("error");
+          setConnection((current) =>
+            current === "joining" ? "error" : current,
+          );
           setError(event.message);
         });
         client.on("disconnect", () => setConnection("disconnected"));
@@ -102,6 +128,10 @@ export default function ChatConnectionStatus({ rideId }: { rideId: string }) {
   }, []);
 
   useEffect(() => {
+    setMessages([]);
+    setDraft("");
+    setError(null);
+
     const client = socketRef.current;
     if (!client?.connected) return;
 
@@ -110,12 +140,16 @@ export default function ChatConnectionStatus({ rideId }: { rideId: string }) {
     client.emit("join_ride", { rideId });
   }, [rideId]);
 
-  if (error) {
-    return (
-      <p role="alert" className="text-sm text-destructive">
-        {error}
-      </p>
-    );
+  function sendMessage(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    const text = draft.trim();
+    const client = socketRef.current;
+    if (!text || connection !== "joined" || !client?.connected) return;
+
+    setError(null);
+    client.emit("send_message", { rideId, text });
+    setDraft("");
   }
 
   const statusText = {
@@ -127,6 +161,94 @@ export default function ChatConnectionStatus({ rideId }: { rideId: string }) {
   }[connection];
 
   return (
-    <output className="text-sm text-muted-foreground">{statusText}</output>
+    <section className="flex min-h-[65vh] w-full flex-col gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="text-muted-foreground">Selected ride: {rideId}</p>
+        <output className="text-sm text-muted-foreground">{statusText}</output>
+      </div>
+
+      {error && (
+        <p role="alert" className="text-sm text-destructive">
+          {error}
+        </p>
+      )}
+
+      <div
+        role="log"
+        aria-label="Live ride messages"
+        aria-live="polite"
+        className="flex min-h-[35vh] max-h-[50vh] flex-1 flex-col gap-3 overflow-y-auto rounded-2xl border border-border/60 bg-background/60 p-4"
+      >
+        {messages.length === 0 ? (
+          <p className="m-auto max-w-sm text-center text-sm text-muted-foreground">
+            No new messages yet. Earlier messages will be loaded in a later
+            step.
+          </p>
+        ) : (
+          messages.map((message) => {
+            const isOwnMessage = currentUserId === message.senderId;
+
+            return (
+              <article
+                key={message.id}
+                className={`max-w-[85%] rounded-2xl px-4 py-2.5 ${
+                  isOwnMessage
+                    ? "self-end bg-primary text-primary-foreground"
+                    : "self-start bg-muted text-foreground"
+                }`}
+              >
+                <p className="whitespace-pre-wrap break-words text-sm">
+                  {message.text}
+                </p>
+                <time
+                  dateTime={message.createdAt}
+                  className={`mt-1 block text-right text-xs ${
+                    isOwnMessage
+                      ? "text-primary-foreground/70"
+                      : "text-muted-foreground"
+                  }`}
+                >
+                  {formatMessageTime(message.createdAt)}
+                </time>
+              </article>
+            );
+          })
+        )}
+      </div>
+
+      <form onSubmit={sendMessage} className="flex w-full items-center gap-2">
+        <Input
+          aria-label="Message"
+          autoComplete="off"
+          className="min-w-0 flex-1"
+          disabled={connection !== "joined"}
+          maxLength={1000}
+          onChange={(event) => setDraft(event.target.value)}
+          placeholder={
+            connection === "joined"
+              ? "Type a message..."
+              : "Join the ride chat to message"
+          }
+          value={draft}
+        />
+        <Button
+          type="submit"
+          disabled={connection !== "joined" || !draft.trim()}
+        >
+          Send
+        </Button>
+      </form>
+    </section>
   );
+}
+
+function formatMessageTime(value: string) {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) return "";
+
+  return new Intl.DateTimeFormat(undefined, {
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(date);
 }

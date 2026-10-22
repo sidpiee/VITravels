@@ -8,8 +8,7 @@ export default async function RideChat({
   const { rideId } = await params;
 
   return (
-    <div className="relative flex flex-col min-h-[70vh] items-start justify-between rounded-3xl border border-border bg-card/70 p-5">
-      <p className="text-muted-foreground">Selected ride: {rideId}</p>
+    <div className="relative flex min-h-[70vh] w-full flex-col rounded-3xl border border-purple-200 bg-purple-50 p-5 dark:border-border dark:bg-card/70">
       <ChatConnectionStatus rideId={rideId} />
     </div>
   );
