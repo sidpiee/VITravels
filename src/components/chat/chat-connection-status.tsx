@@ -31,6 +31,7 @@ export default function ChatConnectionStatus({ rideId }: { rideId: string }) {
   const [error, setError] = useState<string | null>(null);
   const [draft, setDraft] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const currentUserId = user.data?.user._id;
 
   useEffect(() => {
@@ -82,24 +83,35 @@ export default function ChatConnectionStatus({ rideId }: { rideId: string }) {
 
             setConnection("joined");
             setError(null);
+            setIsLoadingHistory(true);
+            client.emit("get_messages", { rideId: event.rideId });
+          },
+        );
+        client.on(
+          "messages",
+          (event: { rideId: string; messages: ChatMessage[] }) => {
+            if (event.rideId !== activeRideId.current) return;
+
+            setMessages((current) => mergeMessages(current, event.messages));
+            setIsLoadingHistory(false);
           },
         );
         client.on("new_message", (message: ChatMessage) => {
           if (message.rideId !== activeRideId.current) return;
 
-          setMessages((current) =>
-            current.some((item) => item.id === message.id)
-              ? current
-              : [...current, message],
-          );
+          setMessages((current) => mergeMessages(current, [message]));
         });
         client.on("chat_error", (event: { message: string }) => {
           setConnection((current) =>
             current === "joining" ? "error" : current,
           );
           setError(event.message);
+          setIsLoadingHistory(false);
         });
-        client.on("disconnect", () => setConnection("disconnected"));
+        client.on("disconnect", () => {
+          setConnection("disconnected");
+          setIsLoadingHistory(false);
+        });
         client.on("connect_error", (cause: Error) => {
           setConnection("error");
           setError(cause.message || "Could not connect to chat.");
@@ -131,6 +143,7 @@ export default function ChatConnectionStatus({ rideId }: { rideId: string }) {
     setMessages([]);
     setDraft("");
     setError(null);
+    setIsLoadingHistory(false);
 
     const client = socketRef.current;
     if (!client?.connected) return;
@@ -181,8 +194,9 @@ export default function ChatConnectionStatus({ rideId }: { rideId: string }) {
       >
         {messages.length === 0 ? (
           <p className="m-auto max-w-sm text-center text-sm text-muted-foreground">
-            No new messages yet. Earlier messages will be loaded in a later
-            step.
+            {isLoadingHistory
+              ? "Loading messages…"
+              : "No messages yet. Send the first one."}
           </p>
         ) : (
           messages.map((message) => {
@@ -251,4 +265,21 @@ function formatMessageTime(value: string) {
     hour: "numeric",
     minute: "2-digit",
   }).format(date);
+}
+
+function mergeMessages(
+  current: ChatMessage[],
+  incoming: ChatMessage[],
+): ChatMessage[] {
+  const messagesById = new Map<string, ChatMessage>();
+
+  for (const message of [...current, ...incoming]) {
+    messagesById.set(message.id, message);
+  }
+
+  return [...messagesById.values()].sort(
+    (first, second) =>
+      new Date(first.createdAt).getTime() -
+      new Date(second.createdAt).getTime(),
+  );
 }
