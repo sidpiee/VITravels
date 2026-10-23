@@ -9,9 +9,16 @@ import {
   Message,
   MessageContent,
   MessageFooter,
-  MessageGroup,
   MessageHeader,
 } from "@/components/ui/message";
+import {
+  MessageScroller,
+  MessageScrollerButton,
+  MessageScrollerContent,
+  MessageScrollerItem,
+  MessageScrollerProvider,
+  MessageScrollerViewport,
+} from "@/components/ui/message-scroller";
 import { useCurrentUser } from "@/hooks/use-current-user";
 
 type ConnectionState =
@@ -194,66 +201,76 @@ export default function ChatConnectionStatus({ rideId }: { rideId: string }) {
         </p>
       )}
 
-      <MessageGroup
-        role="log"
-        aria-label="Live ride messages"
-        aria-live="polite"
-        className="min-h-0 flex-1 overflow-y-auto rounded-2xl border border-border/60 bg-background/60 p-4"
-      >
-        {messages.length === 0 ? (
-          <p className="m-auto max-w-sm text-center text-sm text-muted-foreground">
-            {isLoadingHistory
-              ? "Loading messages…"
-              : "No messages yet. Send the first one."}
-          </p>
-        ) : (
-          messages.map((message) => {
-            const isOwnMessage = currentUserId === message.senderId;
-            const senderName =
-              (isOwnMessage ? "You" : undefined) ||
-              message.senderName?.trim() ||
-              (isOwnMessage ? user.data?.user.name : undefined);
-
-            return (
-              <Message key={message.id} align={isOwnMessage ? "end" : "start"}>
-                <MessageContent
-                  className={`w-fit max-w-[85%] gap-1 rounded-2xl px-4 py-2.5 ${
-                    isOwnMessage
-                      ? "self-end bg-primary text-primary-foreground"
-                      : "self-start bg-muted text-foreground"
-                  }`}
-                >
-                  {senderName && (
-                    <MessageHeader
-                      className={`px-0 font-semibold ${
-                        isOwnMessage
-                          ? "text-primary-foreground/80"
-                          : "text-muted-foreground"
-                      }`}
-                    >
-                      {senderName}
-                    </MessageHeader>
-                  )}
-                  <p className="whitespace-pre-wrap break-words text-sm">
-                    {message.text}
+      <MessageScrollerProvider autoScroll defaultScrollPosition="end">
+        <MessageScroller className="min-h-0 flex-1 rounded-2xl border border-border/60 bg-background/60">
+          <MessageScrollerViewport aria-label="Live ride messages">
+            <MessageScrollerContent className="gap-3 p-4">
+              {messages.length === 0 ? (
+                <MessageScrollerItem className="my-auto flex w-full justify-center">
+                  <p className="max-w-sm text-center text-sm text-muted-foreground">
+                    {isLoadingHistory
+                      ? "Loading messages…"
+                      : "No messages yet. Send the first one."}
                   </p>
-                  <MessageFooter
-                    className={`px-0 ${
-                      isOwnMessage
-                        ? "text-primary-foreground/70"
-                        : "text-muted-foreground"
-                    }`}
-                  >
-                    <time dateTime={message.createdAt}>
-                      {formatMessageTime(message.createdAt)}
-                    </time>
-                  </MessageFooter>
-                </MessageContent>
-              </Message>
-            );
-          })
-        )}
-      </MessageGroup>
+                </MessageScrollerItem>
+              ) : (
+                messages.map((message) => {
+                  const isOwnMessage = currentUserId === message.senderId;
+                  const senderName =
+                    (isOwnMessage ? "You" : undefined) ||
+                    message.senderName?.trim() ||
+                    (isOwnMessage ? user.data?.user.name : undefined);
+
+                  return (
+                    <MessageScrollerItem
+                      key={message.id}
+                      messageId={message.id}
+                      className="w-full"
+                    >
+                      <Message align={isOwnMessage ? "end" : "start"}>
+                        <MessageContent
+                          className={`w-fit max-w-[85%] gap-1 rounded-2xl px-4 py-2.5 ${
+                            isOwnMessage
+                              ? "self-end bg-primary text-primary-foreground"
+                              : "self-start bg-muted text-foreground"
+                          }`}
+                        >
+                          {senderName && (
+                            <MessageHeader
+                              className={`px-0 font-semibold ${
+                                isOwnMessage
+                                  ? "text-primary-foreground/80"
+                                  : "text-muted-foreground"
+                              }`}
+                            >
+                              {senderName}
+                            </MessageHeader>
+                          )}
+                          <p className="whitespace-pre-wrap break-words text-sm">
+                            {message.text}
+                          </p>
+                          <MessageFooter
+                            className={`px-0 ${
+                              isOwnMessage
+                                ? "text-primary-foreground/70"
+                                : "text-muted-foreground"
+                            }`}
+                          >
+                            <time dateTime={message.createdAt}>
+                              {formatMessageTime(message.createdAt)}
+                            </time>
+                          </MessageFooter>
+                        </MessageContent>
+                      </Message>
+                    </MessageScrollerItem>
+                  );
+                })
+              )}
+            </MessageScrollerContent>
+          </MessageScrollerViewport>
+          <MessageScrollerButton />
+        </MessageScroller>
+      </MessageScrollerProvider>
 
       <form onSubmit={sendMessage} className="flex w-full items-center gap-2">
         <Input
