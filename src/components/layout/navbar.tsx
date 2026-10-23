@@ -116,6 +116,16 @@ export function NavMenu() {
                   <Link href="/bookings">My bookings</Link>
                 </NavigationMenuLink>
               </NavigationMenuItem>
+              {user && (
+                <NavigationMenuItem>
+                  <NavigationMenuLink
+                    asChild
+                    className={navigationMenuTriggerStyle()}
+                  >
+                    <Link href="/chat">My Chats</Link>
+                  </NavigationMenuLink>
+                </NavigationMenuItem>
+              )}
               <NavigationMenuItem>
                 {user ? (
                   <>
@@ -201,6 +211,15 @@ export function NavMenu() {
               >
                 My bookings
               </Link>
+              {user && (
+                <Link
+                  href="/chat"
+                  className={mobileLinkClass}
+                  onClick={() => setMobileOpen(false)}
+                >
+                  My Chats
+                </Link>
+              )}
 
               {!isAuthPage && (
                 <div className="mt-1 border-t border-border/70 pt-2">
