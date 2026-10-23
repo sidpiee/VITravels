@@ -18,6 +18,7 @@ type ChatMessage = {
   id: string;
   rideId: string;
   senderId: string;
+  senderName?: string;
   text: string;
   createdAt: string;
 };
@@ -201,6 +202,10 @@ export default function ChatConnectionStatus({ rideId }: { rideId: string }) {
         ) : (
           messages.map((message) => {
             const isOwnMessage = currentUserId === message.senderId;
+            const senderName =
+              (isOwnMessage ? "You" : undefined) ||
+              message.senderName?.trim() ||
+              (isOwnMessage ? user.data?.user.name : undefined);
 
             return (
               <article
@@ -211,6 +216,17 @@ export default function ChatConnectionStatus({ rideId }: { rideId: string }) {
                     : "self-start bg-muted text-foreground"
                 }`}
               >
+                {senderName && (
+                  <p
+                    className={`mb-1 text-xs font-semibold ${
+                      isOwnMessage
+                        ? "text-primary-foreground/80"
+                        : "text-muted-foreground"
+                    }`}
+                  >
+                    {senderName}
+                  </p>
+                )}
                 <p className="whitespace-pre-wrap break-words text-sm">
                   {message.text}
                 </p>
