@@ -74,7 +74,7 @@ export default function ChatSidebar() {
   const queriesSucceeded = ridesQuery.isSuccess && bookingsQuery.isSuccess;
 
   return (
-    <aside className="flex h-fit max-h-[25dvh] min-h-0 w-full max-w-xl shrink-0 flex-col gap-3 overflow-y-auto rounded-3xl border border-border/60 bg-card/80 p-4 shadow-xl shadow-purple-500/5 backdrop-blur-sm sm:p-5 lg:h-full lg:max-h-full">
+    <aside className="flex h-fit max-h-[25dvh] min-h-0 w-full max-w-xl shrink-0 flex-col gap-3 overflow-y-auto rounded-3xl border border-purple-200 bg-card/80 p-4 shadow-xl shadow-purple-500/10 backdrop-blur-sm sm:p-5 lg:h-full lg:max-h-full dark:border-border dark:shadow-purple-500/5">
       <p className="mb-1 bg-linear-to-r from-purple-500 to-purple-700 bg-clip-text font-heading2 text-3xl font-bold text-transparent sm:text-5xl dark:to-purple-300">
         My Chats
       </p>

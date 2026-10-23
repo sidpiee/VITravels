@@ -244,7 +244,7 @@ export default function ChatConnectionStatus({ rideId }: { rideId: string }) {
                         <MessageContent
                           className={`w-fit max-w-[85%] gap-1 rounded-2xl px-4 py-2.5 ${
                             isOwnMessage
-                              ? "self-end bg-primary text-primary-foreground"
+                              ? "self-end bg-linear-to-r from-purple-700 via-purple-800 to-violet-800 text-white dark:from-purple-600 dark:via-purple-700 dark:to-violet-700"
                               : "self-start bg-muted text-foreground"
                           }`}
                         >
@@ -252,7 +252,7 @@ export default function ChatConnectionStatus({ rideId }: { rideId: string }) {
                             <MessageHeader
                               className={`px-0 font-semibold ${
                                 isOwnMessage
-                                  ? "text-primary-foreground/80"
+                                  ? "text-white"
                                   : "text-muted-foreground"
                               }`}
                             >
@@ -265,7 +265,7 @@ export default function ChatConnectionStatus({ rideId }: { rideId: string }) {
                           <MessageFooter
                             className={`px-0 ${
                               isOwnMessage
-                                ? "text-primary-foreground/70"
+                                ? "text-white"
                                 : "text-muted-foreground"
                             }`}
                           >
