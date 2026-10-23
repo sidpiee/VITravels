@@ -5,6 +5,13 @@ import { io, type Socket } from "socket.io-client";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Message,
+  MessageContent,
+  MessageFooter,
+  MessageGroup,
+  MessageHeader,
+} from "@/components/ui/message";
 import { useCurrentUser } from "@/hooks/use-current-user";
 
 type ConnectionState =
@@ -175,7 +182,7 @@ export default function ChatConnectionStatus({ rideId }: { rideId: string }) {
   }[connection];
 
   return (
-    <section className="flex min-h-[65vh] w-full flex-col gap-4">
+    <section className="flex h-full min-h-0 w-full flex-1 flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="text-muted-foreground">Selected ride: {rideId}</p>
         <output className="text-sm text-muted-foreground">{statusText}</output>
@@ -187,11 +194,11 @@ export default function ChatConnectionStatus({ rideId }: { rideId: string }) {
         </p>
       )}
 
-      <div
+      <MessageGroup
         role="log"
         aria-label="Live ride messages"
         aria-live="polite"
-        className="flex min-h-[35vh] max-h-[50vh] flex-1 flex-col gap-3 overflow-y-auto rounded-2xl border border-border/60 bg-background/60 p-4"
+        className="min-h-0 flex-1 overflow-y-auto rounded-2xl border border-border/60 bg-background/60 p-4"
       >
         {messages.length === 0 ? (
           <p className="m-auto max-w-sm text-center text-sm text-muted-foreground">
@@ -208,43 +215,45 @@ export default function ChatConnectionStatus({ rideId }: { rideId: string }) {
               (isOwnMessage ? user.data?.user.name : undefined);
 
             return (
-              <article
-                key={message.id}
-                className={`max-w-[85%] rounded-2xl px-4 py-2.5 ${
-                  isOwnMessage
-                    ? "self-end bg-primary text-primary-foreground"
-                    : "self-start bg-muted text-foreground"
-                }`}
-              >
-                {senderName && (
-                  <p
-                    className={`mb-1 text-xs font-semibold ${
+              <Message key={message.id} align={isOwnMessage ? "end" : "start"}>
+                <MessageContent
+                  className={`w-fit max-w-[85%] gap-1 rounded-2xl px-4 py-2.5 ${
+                    isOwnMessage
+                      ? "self-end bg-primary text-primary-foreground"
+                      : "self-start bg-muted text-foreground"
+                  }`}
+                >
+                  {senderName && (
+                    <MessageHeader
+                      className={`px-0 font-semibold ${
+                        isOwnMessage
+                          ? "text-primary-foreground/80"
+                          : "text-muted-foreground"
+                      }`}
+                    >
+                      {senderName}
+                    </MessageHeader>
+                  )}
+                  <p className="whitespace-pre-wrap break-words text-sm">
+                    {message.text}
+                  </p>
+                  <MessageFooter
+                    className={`px-0 ${
                       isOwnMessage
-                        ? "text-primary-foreground/80"
+                        ? "text-primary-foreground/70"
                         : "text-muted-foreground"
                     }`}
                   >
-                    {senderName}
-                  </p>
-                )}
-                <p className="whitespace-pre-wrap break-words text-sm">
-                  {message.text}
-                </p>
-                <time
-                  dateTime={message.createdAt}
-                  className={`mt-1 block text-right text-xs ${
-                    isOwnMessage
-                      ? "text-primary-foreground/70"
-                      : "text-muted-foreground"
-                  }`}
-                >
-                  {formatMessageTime(message.createdAt)}
-                </time>
-              </article>
+                    <time dateTime={message.createdAt}>
+                      {formatMessageTime(message.createdAt)}
+                    </time>
+                  </MessageFooter>
+                </MessageContent>
+              </Message>
             );
           })
         )}
-      </div>
+      </MessageGroup>
 
       <form onSubmit={sendMessage} className="flex w-full items-center gap-2">
         <Input
