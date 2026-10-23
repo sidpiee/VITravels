@@ -214,7 +214,15 @@ export default function ChatConnectionStatus({ rideId }: { rideId: string }) {
                   </p>
                 </MessageScrollerItem>
               ) : (
-                messages.map((message) => {
+                messages.map((message, index) => {
+                  const previousMessage = messages[index - 1];
+                  const dateLabel = formatMessageDate(message.createdAt);
+                  const showDateHeading =
+                    !previousMessage ||
+                    !isSameLocalDate(
+                      new Date(previousMessage.createdAt),
+                      new Date(message.createdAt),
+                    );
                   const isOwnMessage = currentUserId === message.senderId;
                   const senderName =
                     (isOwnMessage ? "You" : undefined) ||
@@ -227,6 +235,11 @@ export default function ChatConnectionStatus({ rideId }: { rideId: string }) {
                       messageId={message.id}
                       className="w-full"
                     >
+                      {showDateHeading && dateLabel && (
+                        <p className="mb-3 text-center text-xs font-medium text-muted-foreground">
+                          {dateLabel}
+                        </p>
+                      )}
                       <Message align={isOwnMessage ? "end" : "start"}>
                         <MessageContent
                           className={`w-fit max-w-[85%] gap-1 rounded-2xl px-4 py-2.5 ${
@@ -307,6 +320,38 @@ function formatMessageTime(value: string) {
     hour: "numeric",
     minute: "2-digit",
   }).format(date);
+}
+
+function formatMessageDate(value: string) {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) return "";
+
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+
+  if (isSameLocalDate(date, today)) return "Today";
+  if (isSameLocalDate(date, yesterday)) return "Yesterday";
+
+  return new Intl.DateTimeFormat(undefined, {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    year: date.getFullYear() === today.getFullYear() ? undefined : "numeric",
+  }).format(date);
+}
+
+function isSameLocalDate(first: Date, second: Date) {
+  if (Number.isNaN(first.getTime()) || Number.isNaN(second.getTime())) {
+    return false;
+  }
+
+  return (
+    first.getFullYear() === second.getFullYear() &&
+    first.getMonth() === second.getMonth() &&
+    first.getDate() === second.getDate()
+  );
 }
 
 function mergeMessages(
