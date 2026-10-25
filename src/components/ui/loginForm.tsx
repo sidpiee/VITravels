@@ -167,6 +167,14 @@ export function LoginForm() {
                 </Field>
               )}
             />
+            <div className="flex justify-end">
+              <Link
+                href="/auth/forgot-password"
+                className="text-sm text-primary underline-offset-4 hover:underline"
+              >
+                Forgot password?
+              </Link>
+            </div>
           </FieldGroup>
         </form>
       </CardContent>

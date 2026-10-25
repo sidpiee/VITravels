@@ -25,7 +25,7 @@ export function NavMenu() {
   const { data: user } = useCurrentUser();
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const isAuthPage = pathname === "/auth/login" || pathname === "/auth/signup";
+  const isAuthPage = pathname?.startsWith("/auth/") ?? false;
   const mobileLinkClass =
     "flex min-h-11 items-center rounded-2xl px-3 py-2 text-sm font-medium transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
