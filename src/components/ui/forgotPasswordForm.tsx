@@ -1,6 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation } from "@tanstack/react-query";
 import { Eye, EyeClosed } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
@@ -86,9 +87,41 @@ export function ForgotPasswordForm() {
     defaultValues: { newPassword: "", confirmPassword: "" },
   });
 
+  const forgotPasswordMutation = useMutation({
+    mutationFn: async (requestedEmail: string) => {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_API}/api/auth/forgot-password`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email: requestedEmail }),
+        },
+      );
+
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message);
+      }
+
+      return (await res.json()) as { message?: string };
+    },
+    onSuccess: (data, requestedEmail) => {
+      setEmail(requestedEmail);
+      setStep("otp");
+      toast.message(
+        data.message ??
+          "If the email is registered, a password-reset OTP has been sent.",
+      );
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
+
   function handleEmailSubmit(values: z.infer<typeof emailSchema>) {
-    setEmail(values.email);
-    setStep("otp");
+    forgotPasswordMutation.mutate(values.email);
   }
 
   function handleEmailValidationError(
@@ -416,9 +449,10 @@ export function ForgotPasswordForm() {
             <Button
               type="button"
               onClick={handleEmailContinue}
+              disabled={forgotPasswordMutation.isPending}
               className="w-full cursor-pointer sm:w-auto"
             >
-              Continue
+              {forgotPasswordMutation.isPending ? "Sending..." : "Continue"}
             </Button>
           )}
           {step === "otp" && (
