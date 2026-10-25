@@ -1,6 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Eye, EyeClosed } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -70,6 +71,7 @@ export function ForgotPasswordForm() {
   const [step, setStep] = useState<ResetStep>("email");
   const [email, setEmail] = useState("");
   const [submissionNote, setSubmissionNote] = useState("");
+  const [showNewPassword, setShowNewPassword] = useState(false);
 
   const emailForm = useForm<z.infer<typeof emailSchema>>({
     resolver: zodResolver(emailSchema),
@@ -313,19 +315,41 @@ export function ForgotPasswordForm() {
                     <FieldLabel htmlFor="forgot-password-new-password">
                       New password
                     </FieldLabel>
-                    <Input
-                      {...field}
-                      id="forgot-password-new-password"
-                      type="password"
-                      autoComplete="new-password"
-                      placeholder="At least 8 characters"
-                      aria-invalid={fieldState.invalid}
-                      onChange={(event) => {
-                        field.onChange(event);
-                        setSubmissionNote("");
-                      }}
-                      required
-                    />
+                    <div className="relative">
+                      <Input
+                        {...field}
+                        id="forgot-password-new-password"
+                        type={showNewPassword ? "text" : "password"}
+                        autoComplete="new-password"
+                        placeholder="At least 8 characters"
+                        aria-invalid={fieldState.invalid}
+                        className="pr-11"
+                        onChange={(event) => {
+                          field.onChange(event);
+                          setSubmissionNote("");
+                        }}
+                        required
+                      />
+                      <Button
+                        className="absolute top-0 right-0 h-full cursor-pointer px-3 hover:bg-transparent"
+                        onClick={() =>
+                          setShowNewPassword((visible) => !visible)
+                        }
+                        size="icon"
+                        type="button"
+                        variant="ghost"
+                        aria-label={
+                          showNewPassword ? "Hide password" : "Show password"
+                        }
+                        aria-pressed={showNewPassword}
+                      >
+                        {showNewPassword ? (
+                          <Eye className="h-4 w-4 text-muted-foreground" />
+                        ) : (
+                          <EyeClosed className="h-4 w-4 text-muted-foreground" />
+                        )}
+                      </Button>
+                    </div>
                     {fieldState.invalid && (
                       <FieldError errors={[fieldState.error]} />
                     )}
