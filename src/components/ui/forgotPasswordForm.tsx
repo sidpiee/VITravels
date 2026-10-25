@@ -1,7 +1,11 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
-import { type FormEvent, useState } from "react";
+import { useState } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { toast } from "sonner";
+import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -26,6 +30,34 @@ import {
 } from "@/components/ui/input-otp";
 import { ShineBorder } from "@/components/ui/shine-border";
 
+const emailSchema = z.object({
+  email: z
+    .email("Invalid email address")
+    .trim()
+    .regex(
+      /^[a-z]+\.2[a-z0-9]{4}10[a-z0-9]{3}@vitbhopal\.ac\.in$/i,
+      "Use your VIT Bhopal email, e.g. student.2xxxx10xxx@vitbhopal.ac.in.",
+    )
+    .toLowerCase(),
+});
+
+const otpSchema = z.object({
+  otp: z.string().regex(/^\d{6}$/, "Enter a valid 6-digit verification code."),
+});
+
+const passwordSchema = z
+  .object({
+    newPassword: z
+      .string()
+      .min(8, "Password must be at least 8 characters.")
+      .max(50, "Password cannot exceed 50 characters."),
+    confirmPassword: z.string().min(1, "Please confirm your new password."),
+  })
+  .refine((values) => values.newPassword === values.confirmPassword, {
+    path: ["confirmPassword"],
+    message: "Passwords do not match.",
+  });
+
 type ResetStep = "email" | "otp" | "password";
 
 const steps: { id: ResetStep; label: string }[] = [
@@ -37,33 +69,71 @@ const steps: { id: ResetStep; label: string }[] = [
 export function ForgotPasswordForm() {
   const [step, setStep] = useState<ResetStep>("email");
   const [email, setEmail] = useState("");
-  const [otp, setOtp] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [passwordError, setPasswordError] = useState("");
   const [submissionNote, setSubmissionNote] = useState("");
 
-  function handleEmailSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  const emailForm = useForm<z.infer<typeof emailSchema>>({
+    resolver: zodResolver(emailSchema),
+    defaultValues: { email: "" },
+  });
+  const otpForm = useForm<z.infer<typeof otpSchema>>({
+    resolver: zodResolver(otpSchema),
+    defaultValues: { otp: "" },
+  });
+  const passwordForm = useForm<z.infer<typeof passwordSchema>>({
+    resolver: zodResolver(passwordSchema),
+    defaultValues: { newPassword: "", confirmPassword: "" },
+  });
+
+  function handleEmailSubmit(values: z.infer<typeof emailSchema>) {
+    setEmail(values.email);
     setStep("otp");
   }
 
-  function handleOtpSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (otp.length === 6) setStep("password");
+  function handleEmailValidationError(
+    errors: typeof emailForm.formState.errors,
+  ) {
+    toast.error(errors.email?.message ?? "Invalid email address.");
   }
 
-  function handlePasswordSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  function handleEmailContinue() {
+    void emailForm.handleSubmit(
+      handleEmailSubmit,
+      handleEmailValidationError,
+    )();
+  }
 
-    if (password !== confirmPassword) {
-      setPasswordError("Passwords do not match.");
-      return;
-    }
+  function handleOtpSubmit() {
+    setStep("password");
+  }
 
-    setPasswordError("");
+  function handleOtpContinue() {
+    void otpForm.handleSubmit(handleOtpSubmit, handleOtpValidationError)();
+  }
+
+  function handleOtpValidationError(errors: typeof otpForm.formState.errors) {
+    toast.error(errors.otp?.message ?? "Enter the 6-digit verification code.");
+  }
+
+  function handlePasswordSubmit() {
     setSubmissionNote(
       "The password reset screen is ready. Password updates are not connected yet.",
+    );
+  }
+
+  function handlePasswordContinue() {
+    void passwordForm.handleSubmit(
+      handlePasswordSubmit,
+      handlePasswordValidationError,
+    )();
+  }
+
+  function handlePasswordValidationError(
+    errors: typeof passwordForm.formState.errors,
+  ) {
+    toast.error(
+      errors.newPassword?.message ??
+        errors.confirmPassword?.message ??
+        "Check your new password.",
     );
   }
 
@@ -132,56 +202,95 @@ export function ForgotPasswordForm() {
 
       <CardContent>
         {step === "email" && (
-          <form id="forgot-password-email-form" onSubmit={handleEmailSubmit}>
+          <form
+            id="forgot-password-email-form"
+            noValidate
+            onSubmit={emailForm.handleSubmit(
+              handleEmailSubmit,
+              handleEmailValidationError,
+            )}
+          >
             <FieldGroup>
-              <Field>
-                <FieldLabel htmlFor="forgot-password-email">Email</FieldLabel>
-                <Input
-                  id="forgot-password-email"
-                  name="email"
-                  type="email"
-                  placeholder="you@vitbhopal.ac.in"
-                  autoComplete="email"
-                  autoCapitalize="none"
-                  value={email}
-                  onChange={(event) => setEmail(event.target.value)}
-                  required
-                />
-                <FieldDescription>
-                  A one-time code will be used to verify your account.
-                </FieldDescription>
-              </Field>
+              <Controller
+                name="email"
+                control={emailForm.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="forgot-password-email">
+                      Email
+                    </FieldLabel>
+                    <Input
+                      {...field}
+                      id="forgot-password-email"
+                      type="email"
+                      placeholder="you@vitbhopal.ac.in"
+                      autoComplete="email"
+                      autoCapitalize="none"
+                      aria-invalid={fieldState.invalid}
+                      aria-describedby={
+                        fieldState.invalid
+                          ? "forgot-password-email-error"
+                          : undefined
+                      }
+                      required
+                    />
+                    {fieldState.invalid && (
+                      <FieldError
+                        id="forgot-password-email-error"
+                        errors={[fieldState.error]}
+                      />
+                    )}
+                    <FieldDescription>
+                      A one-time code will be used to verify your account.
+                    </FieldDescription>
+                  </Field>
+                )}
+              />
             </FieldGroup>
           </form>
         )}
 
         {step === "otp" && (
-          <form id="forgot-password-otp-form" onSubmit={handleOtpSubmit}>
+          <form
+            id="forgot-password-otp-form"
+            noValidate
+            onSubmit={otpForm.handleSubmit(
+              handleOtpSubmit,
+              handleOtpValidationError,
+            )}
+          >
             <FieldGroup>
-              <Field>
-                <FieldLabel htmlFor="forgot-password-otp">
-                  Verification code
-                </FieldLabel>
-                <InputOTP
-                  id="forgot-password-otp"
-                  maxLength={6}
-                  value={otp}
-                  onChange={setOtp}
-                  inputMode="numeric"
-                >
-                  <InputOTPGroup>
-                    <InputOTPSlot index={0} />
-                    <InputOTPSlot index={1} />
-                    <InputOTPSlot index={2} />
-                    <InputOTPSlot index={3} />
-                    <InputOTPSlot index={4} />
-                    <InputOTPSlot index={5} />
-                  </InputOTPGroup>
-                </InputOTP>
-                <FieldDescription>
-                  Enter the 6-digit one-time code to continue.
-                </FieldDescription>
-              </Field>
+              <Controller
+                name="otp"
+                control={otpForm.control}
+                render={({ field }) => (
+                  <Field>
+                    <FieldLabel htmlFor="forgot-password-otp">
+                      Verification code
+                    </FieldLabel>
+                    <InputOTP
+                      id="forgot-password-otp"
+                      maxLength={6}
+                      value={field.value}
+                      onChange={field.onChange}
+                      onBlur={field.onBlur}
+                      inputMode="numeric"
+                    >
+                      <InputOTPGroup>
+                        <InputOTPSlot index={0} />
+                        <InputOTPSlot index={1} />
+                        <InputOTPSlot index={2} />
+                        <InputOTPSlot index={3} />
+                        <InputOTPSlot index={4} />
+                        <InputOTPSlot index={5} />
+                      </InputOTPGroup>
+                    </InputOTP>
+                    <FieldDescription>
+                      Enter the 6-digit one-time code to continue.
+                    </FieldDescription>
+                  </Field>
+                )}
+              />
             </FieldGroup>
           </form>
         )}
@@ -189,53 +298,67 @@ export function ForgotPasswordForm() {
         {step === "password" && (
           <form
             id="forgot-password-new-password-form"
-            onSubmit={handlePasswordSubmit}
+            noValidate
+            onSubmit={passwordForm.handleSubmit(
+              handlePasswordSubmit,
+              handlePasswordValidationError,
+            )}
           >
             <FieldGroup>
-              <Field>
-                <FieldLabel htmlFor="forgot-password-new-password">
-                  New password
-                </FieldLabel>
-                <Input
-                  id="forgot-password-new-password"
-                  name="newPassword"
-                  type="password"
-                  autoComplete="new-password"
-                  placeholder="At least 8 characters"
-                  minLength={8}
-                  maxLength={50}
-                  value={password}
-                  onChange={(event) => {
-                    setPassword(event.target.value);
-                    setPasswordError("");
-                    setSubmissionNote("");
-                  }}
-                  required
-                />
-              </Field>
-              <Field data-invalid={Boolean(passwordError)}>
-                <FieldLabel htmlFor="forgot-password-confirm-password">
-                  Confirm new password
-                </FieldLabel>
-                <Input
-                  id="forgot-password-confirm-password"
-                  name="confirmPassword"
-                  type="password"
-                  autoComplete="new-password"
-                  placeholder="Re-enter your new password"
-                  minLength={8}
-                  maxLength={50}
-                  value={confirmPassword}
-                  onChange={(event) => {
-                    setConfirmPassword(event.target.value);
-                    setPasswordError("");
-                    setSubmissionNote("");
-                  }}
-                  aria-invalid={Boolean(passwordError)}
-                  required
-                />
-                {passwordError && <FieldError>{passwordError}</FieldError>}
-              </Field>
+              <Controller
+                name="newPassword"
+                control={passwordForm.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="forgot-password-new-password">
+                      New password
+                    </FieldLabel>
+                    <Input
+                      {...field}
+                      id="forgot-password-new-password"
+                      type="password"
+                      autoComplete="new-password"
+                      placeholder="At least 8 characters"
+                      aria-invalid={fieldState.invalid}
+                      onChange={(event) => {
+                        field.onChange(event);
+                        setSubmissionNote("");
+                      }}
+                      required
+                    />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
+              <Controller
+                name="confirmPassword"
+                control={passwordForm.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="forgot-password-confirm-password">
+                      Confirm new password
+                    </FieldLabel>
+                    <Input
+                      {...field}
+                      id="forgot-password-confirm-password"
+                      type="password"
+                      autoComplete="new-password"
+                      placeholder="Re-enter your new password"
+                      aria-invalid={fieldState.invalid}
+                      onChange={(event) => {
+                        field.onChange(event);
+                        setSubmissionNote("");
+                      }}
+                      required
+                    />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
             </FieldGroup>
           </form>
         )}
@@ -267,8 +390,8 @@ export function ForgotPasswordForm() {
           )}
           {step === "email" && (
             <Button
-              type="submit"
-              form="forgot-password-email-form"
+              type="button"
+              onClick={handleEmailContinue}
               className="w-full cursor-pointer sm:w-auto"
             >
               Continue
@@ -276,9 +399,8 @@ export function ForgotPasswordForm() {
           )}
           {step === "otp" && (
             <Button
-              type="submit"
-              form="forgot-password-otp-form"
-              disabled={otp.length !== 6}
+              type="button"
+              onClick={handleOtpContinue}
               className="w-full cursor-pointer sm:w-auto"
             >
               Continue
@@ -286,8 +408,8 @@ export function ForgotPasswordForm() {
           )}
           {step === "password" && (
             <Button
-              type="submit"
-              form="forgot-password-new-password-form"
+              type="button"
+              onClick={handlePasswordContinue}
               className="w-full cursor-pointer sm:w-auto"
             >
               Reset password
