@@ -73,6 +73,9 @@ export function ForgotPasswordForm() {
   const [email, setEmail] = useState("");
   const [submissionNote, setSubmissionNote] = useState("");
   const [showNewPassword, setShowNewPassword] = useState(false);
+  const [resetSessionToken, setResetSessionToken] = useState<string | null>(
+    null,
+  );
 
   const emailForm = useForm<z.infer<typeof emailSchema>>({
     resolver: zodResolver(emailSchema),
@@ -109,11 +112,55 @@ export function ForgotPasswordForm() {
     },
     onSuccess: (data, requestedEmail) => {
       setEmail(requestedEmail);
+      setResetSessionToken(null);
       setStep("otp");
       toast.message(
         data.message ??
           "If the email is registered, a password-reset OTP has been sent.",
       );
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
+
+  const verifyPasswordResetOtpMutation = useMutation({
+    mutationFn: async ({
+      requestedEmail,
+      otp,
+    }: {
+      requestedEmail: string;
+      otp: string;
+    }) => {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_API}/api/auth/verify-password-reset-otp`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email: requestedEmail, otp }),
+        },
+      );
+
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message ?? "Unable to verify the OTP.");
+      }
+
+      const data = (await res.json()) as {
+        message?: string;
+        resetSessionToken?: string;
+      };
+      if (!data.resetSessionToken) {
+        throw new Error("Unable to verify the OTP. Please try again.");
+      }
+      return data;
+    },
+    onSuccess: (data) => {
+      setResetSessionToken(data.resetSessionToken ?? null);
+      setStep("password");
+      toast.message(data.message ?? "OTP verified successfully.");
     },
     onError: (error) => {
       toast.error(error.message);
@@ -137,8 +184,11 @@ export function ForgotPasswordForm() {
     )();
   }
 
-  function handleOtpSubmit() {
-    setStep("password");
+  function handleOtpSubmit(values: z.infer<typeof otpSchema>) {
+    verifyPasswordResetOtpMutation.mutate({
+      requestedEmail: email,
+      otp: values.otp,
+    });
   }
 
   function handleOtpContinue() {
@@ -459,15 +509,19 @@ export function ForgotPasswordForm() {
             <Button
               type="button"
               onClick={handleOtpContinue}
+              disabled={verifyPasswordResetOtpMutation.isPending}
               className="w-full cursor-pointer sm:w-auto"
             >
-              Continue
+              {verifyPasswordResetOtpMutation.isPending
+                ? "Verifying..."
+                : "Continue"}
             </Button>
           )}
           {step === "password" && (
             <Button
               type="button"
               onClick={handlePasswordContinue}
+              disabled={!resetSessionToken}
               className="w-full cursor-pointer sm:w-auto"
             >
               Reset password
