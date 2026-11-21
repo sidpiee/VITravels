@@ -184,7 +184,7 @@ export function HomeDocumentation() {
                     </span>
                   </div>
                   <span className="text-xs font-medium text-muted-foreground">
-                    Created by <span className="font-semibold text-foreground">Alex (Verified Host)</span>
+                    Created by <span className="font-semibold text-foreground">Ben dover</span>
                   </span>
                 </div>
 
@@ -195,9 +195,9 @@ export function HomeDocumentation() {
                       <div className="h-7 w-0.5 bg-border" />
                       <MapPin className="h-3.5 w-3.5 text-violet-600 dark:text-violet-400" />
                     </div>
-                    <div className="flex flex-col gap-1">
-                      <span className="text-sm font-bold text-foreground">VIT Main Campus, Vellore</span>
-                      <span className="text-xs text-muted-foreground">Chennai International Airport (MAA)</span>
+                    <div className="flex flex-col gap-5">
+                      <span className="text-sm font-bold text-foreground">VIT Bhopal</span>
+                      <span className="text-xs text-muted-foreground">Sehore Station</span>
                     </div>
                   </div>
 
@@ -274,7 +274,7 @@ export function HomeDocumentation() {
 
       {/* Full-Bleed Purple Section: Ready to Travel Together? */}
       <section className="relative w-full overflow-hidden bg-purple-950 text-white py-20 sm:py-28 px-4 sm:px-6 lg:px-8 mt-12 sm:mt-16">
-        <div className="absolute inset-0 bg-linear-to-b from-purple-500 via-violet-500 to-purple-700 dark:from-purple-900/50 dark:via-violet-900/60 dark:to-purple-950 pointer-events-none" />
+        <div className="absolute inset-0 bg-linear-to-b from-purple-500 via-violet-500 to-purple-700 dark:from-purple-900/50 dark:via-violet-700/60 dark:to-purple-950 pointer-events-none" />
         <div className="relative z-10 mx-auto max-w-4xl text-center">
           <h3 className="font-heading2 text-3xl font-extrabold text-white sm:text-5xl tracking-tight">
             Ready to Travel Together?
