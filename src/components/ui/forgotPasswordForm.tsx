@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { Eye, EyeClosed } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -69,10 +70,12 @@ const steps: { id: ResetStep; label: string }[] = [
 ];
 
 export function ForgotPasswordForm() {
+  const router = useRouter();
   const [step, setStep] = useState<ResetStep>("email");
   const [email, setEmail] = useState("");
   const [submissionNote, setSubmissionNote] = useState("");
   const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [resetSessionToken, setResetSessionToken] = useState<string | null>(
     null,
   );
@@ -166,7 +169,38 @@ export function ForgotPasswordForm() {
       toast.error(error.message);
     },
   });
-
+  const resetPasswordMutation = useMutation({
+    mutationFn: async ({
+      newPassword,
+      resetSessionToken,
+    }: {
+      newPassword: string;
+      resetSessionToken: string;
+    }) => {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_API}/api/auth/reset-password`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ newPassword, resetSessionToken }),
+        },
+      );
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message);
+      }
+      return (await res.json()) as { message?: string };
+    },
+    onSuccess: (data) => {
+      toast.message(data.message ?? "Password reset successfully.");
+      router.replace("/auth/login");
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
   function handleEmailSubmit(values: z.infer<typeof emailSchema>) {
     forgotPasswordMutation.mutate(values.email);
   }
@@ -199,10 +233,17 @@ export function ForgotPasswordForm() {
     toast.error(errors.otp?.message ?? "Enter the 6-digit verification code.");
   }
 
-  function handlePasswordSubmit() {
-    setSubmissionNote(
-      "The password reset screen is ready. Password updates are not connected yet.",
-    );
+  function handlePasswordSubmit(values: z.infer<typeof passwordSchema>) {
+    if (!resetSessionToken) {
+      toast.error(
+        "Session token missing or expired. Please verify your OTP again.",
+      );
+      return;
+    }
+    resetPasswordMutation.mutate({
+      newPassword: values.newPassword,
+      resetSessionToken,
+    });
   }
 
   function handlePasswordContinue() {
@@ -447,19 +488,43 @@ export function ForgotPasswordForm() {
                     <FieldLabel htmlFor="forgot-password-confirm-password">
                       Confirm new password
                     </FieldLabel>
-                    <Input
-                      {...field}
-                      id="forgot-password-confirm-password"
-                      type="password"
-                      autoComplete="new-password"
-                      placeholder="Re-enter your new password"
-                      aria-invalid={fieldState.invalid}
-                      onChange={(event) => {
-                        field.onChange(event);
-                        setSubmissionNote("");
-                      }}
-                      required
-                    />
+                    <div className="relative">
+                      <Input
+                        {...field}
+                        id="forgot-password-confirm-password"
+                        type={showConfirmPassword ? "text" : "password"}
+                        autoComplete="new-password"
+                        placeholder="Re-enter your new password"
+                        aria-invalid={fieldState.invalid}
+                        className="pr-11"
+                        onChange={(event) => {
+                          field.onChange(event);
+                          setSubmissionNote("");
+                        }}
+                        required
+                      />
+                      <Button
+                        className="absolute top-0 right-0 h-full cursor-pointer px-3 hover:bg-transparent"
+                        onClick={() =>
+                          setShowConfirmPassword((visible) => !visible)
+                        }
+                        size="icon"
+                        type="button"
+                        variant="ghost"
+                        aria-label={
+                          showConfirmPassword
+                            ? "Hide password"
+                            : "Show password"
+                        }
+                        aria-pressed={showConfirmPassword}
+                      >
+                        {showConfirmPassword ? (
+                          <Eye className="h-4 w-4 text-muted-foreground" />
+                        ) : (
+                          <EyeClosed className="h-4 w-4 text-muted-foreground" />
+                        )}
+                      </Button>
+                    </div>
                     {fieldState.invalid && (
                       <FieldError errors={[fieldState.error]} />
                     )}
@@ -521,10 +586,12 @@ export function ForgotPasswordForm() {
             <Button
               type="button"
               onClick={handlePasswordContinue}
-              disabled={!resetSessionToken}
+              disabled={!resetSessionToken || resetPasswordMutation.isPending}
               className="w-full cursor-pointer sm:w-auto"
             >
-              Reset password
+              {resetPasswordMutation.isPending
+                ? "Resetting..."
+                : "Reset password"}
             </Button>
           )}
           <FieldDescription className="text-center sm:ml-auto sm:text-left">
