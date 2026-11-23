@@ -1,73 +1,52 @@
 # Vitravels
 
-Vitravels is a ride-sharing platform that helps users find, create, and manage shared journeys.
+Vitravels is a campus-tailored ride-sharing and carpooling platform designed for students and commuters to find, organize, and share journeys between campus and major transit hubs. By connecting travelers heading along the same corridors, Vitravels reduces travel expenses, simplifies logistics, and promotes sustainable commuting.
 
-## What the site does
+---
 
-Users can sign up, log in, and browse active rides created by other users. Each ride shows the complete journey details, including:
+## Key Features
 
-- Starting point and destination
-- Travel date and departure time
-- Price per seat
-- Available seats and total capacity
-- Ride creator
-- Ride status
+### 🎓 Verified Campus Community
+- **Domain-Restricted Access**: Registration is restricted to verified university emails (`@vitbhopal.ac.in`) to ensure trust and safety across co-travelers.
+- **Two-Step OTP Authentication**: 6-digit one-time password verification protects account registration and password recovery.
+- **Customizable Profiles**: In-app display name editing so companions always know who they are sharing a ride with.
 
-Users can book an available seat on a ride and cancel their booking later. Ride creators can edit their ride details or cancel a ride when needed.
+---
 
-## Main areas
+### 🔍 Dynamic Ride Discovery & Smart Filtering
+- **Popular Regional Hubs**: Quick selection across prominent regional routes, including Bhopal Junction, Rani Kamlapati (RKMP), Bhopal Airport, Indore Airport, Sehore, Astha, and campus gates.
+- **Multi-Parametric Search**: Filter journeys by origin, destination, calendar date, minimum available seats, and price ranges.
+- **Stutter-Free Draft Filtering**: Filter criteria are adjusted locally and sent on-demand upon clicking **Apply filters**, preventing redundant network requests and lag during selection.
+- **At-a-Glance Route Cards**: Cards display departure schedules, price per seat, remaining seats, driver identity, and journey status (`active`, `completed`, `cancelled`).
 
-### Dashboard
+---
 
-The dashboard displays all currently available rides. Users can search for rides by:
+### 🚗 Ride Publishing & Host Tools
+- **Simple Ride Creation**: Post empty seats in seconds with scheduled departure times (15-minute intervals), per-seat pricing, and capacity caps (1–8 seats).
+- **Route Validation**: Enforces distinct origins and destinations with real-time form checks.
+- **Host Dashboard ("My Rides")**:
+  - Live capacity visualization tracking occupied vs. total seats.
+  - In-place ride editing to modify timings, prices, or seat allocations.
+  - One-click ride cancellation with automated cache synchronization.
 
-- Starting location
-- Destination
-- Travel date
-- Minimum available seats
-- Minimum and maximum price
+---
 
-Filters are edited locally first and are applied only when the user clicks **Apply filters**. This keeps the page from sending a new request for every keystroke.
+### 🎟️ Frictionless Seat Booking & Reservation
+- **One-Click Booking**: Reserve open seats instantly with immediate capacity reduction.
+- **Duplicate Booking Prevention**: Restricts riders from creating overlapping or duplicate bookings for the same trip.
+- **Passenger Hub ("My Bookings")**: Centralized view of all confirmed trips with self-service cancellation, instantly returning seats to the pool for other travelers.
 
-### My rides
+---
 
-The My Rides section contains rides created by the current user. From here, users can review, edit, or cancel their active rides.
+### 💬 Real-Time Group Chat (OueChat)
+- **Ride-Specific Chat Rooms**: Every active ride automatically provisions an isolated real-time chat room powered by Socket.IO.
+- **Secure Token Handshake**: Uses short-lived session tokens issued by the authentication service before establishing socket connections.
+- **Effortless Coordination**: Connect with drivers and co-passengers to align on exact pickup spots, luggage volume, and travel delays without sharing personal phone numbers.
+- **Smooth Messaging Experience**: Auto-scrolling message streams, connection state indicators, and sender name attribution.
 
-### My bookings
+---
 
-The My Bookings section shows the rides booked by the current user. Confirmed bookings can be cancelled from this section.
-
-## Ride experience
-
-Rides are presented as detailed cards so users can quickly compare routes, timing, cost, remaining capacity, and creator information. The interface also indicates whether the current user has already booked a ride and prevents duplicate bookings.
-
-Only active rides with available seats and a future departure time are shown as bookable rides.
-
-## Filtering behavior
-
-The dashboard sends the selected filters to the rides API only after they are applied. The available filters correspond to the ride search API:
-
-```text
-from
-destination
-date
-availableSeats
-minPrice
-maxPrice
-```
-
-Location fields use searchable comboboxes, the date field uses a calendar popover, and numeric filters use compact input controls.
-
-## Built with
-
-Vitravels uses Next.js, React, TypeScript, TanStack Query, Tailwind CSS, shadcn-style UI components, and Lucide icons.
-
-## Chat configuration
-
-Set `NEXT_PUBLIC_OUECHAT_URL` to the OueChat Socket.IO server URL. For local development, use:
-
-```env
-NEXT_PUBLIC_OUECHAT_URL=http://localhost:4000
-```
-
-The chat page requests a short-lived session from `NEXT_PUBLIC_BACKEND_API/api/chat/session` before connecting.
+### 🎨 Modern UI & Responsive Experience
+- **Adaptive Theme Engine**: Seamless switching between Light and Dark modes with OKLCH color palettes and clean contrast.
+- **Mobile-First Layout**: Fully responsive drawer navigation, backdrop blur effects, and touch-optimized controls.
+- **Interactive Feedback**: Instant user feedback via toast notifications, shimmer actions, and animated shine borders.
